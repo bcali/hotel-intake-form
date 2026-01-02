@@ -1,6 +1,6 @@
+import { FormEvent, useState } from 'react';
 import type { FormData } from '../App';
 import { ChevronLeft, Check, Instagram, Facebook, Video, Youtube, MapPin, Search, Plus } from 'lucide-react';
-import { useState } from 'react';
 
 interface SocialStepProps {
   formData: FormData;
@@ -13,7 +13,7 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
   const [showSocial, setShowSocial] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit();
   };

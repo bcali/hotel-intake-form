@@ -1,3 +1,4 @@
+import { FormEvent } from 'react';
 import type { FormData } from '../App';
 import { ChipsInput } from './chips-input';
 import { ChevronRight } from 'lucide-react';
@@ -16,7 +17,7 @@ export function PropertyStep({ formData, updateFormData, onNext }: PropertyStepP
     formData.city.trim() !== '' && 
     formData.keywords.length >= 2;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (isValid) onNext();
   };

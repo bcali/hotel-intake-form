@@ -1,3 +1,4 @@
+import { FormEvent } from 'react';
 import type { FormData } from '../App';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export function TimePeriodStep({ formData, updateFormData, onNext, onBack }: Tim
 
   const dateError = validateDates();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (isValid && !dateError) onNext();
   };

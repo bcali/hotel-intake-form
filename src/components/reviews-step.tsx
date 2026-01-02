@@ -1,6 +1,6 @@
+import { FormEvent, useState } from 'react';
 import type { FormData } from '../App';
 import { ChevronLeft, ChevronRight, Info, AlertTriangle } from 'lucide-react';
-import { useState } from 'react';
 
 interface ReviewsStepProps {
   formData: FormData;
@@ -42,7 +42,7 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
     updateFormData({ selectedOTAs: newSelected });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (isValid) onNext();
   };
