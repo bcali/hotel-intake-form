@@ -1,4 +1,4 @@
-import { FormData } from '../App';
+import type { FormData } from '../App';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 
 interface TimePeriodStepProps {
