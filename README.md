@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# 🏨 Hotel Voice of Guest Intake & Action Plan Generator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An internal tool designed for hotel teams to transform fragmented guest feedback into prioritized, departmental action plans.
 
-Currently, two official plugins are available:
+[Live Demo](https://bcali.github.io/hotel-intake-form/) | [Product Requirements (PRD)](./PRD.md) | [GM Strategy Deck](https://gamma.app/docs/q7rs4knnhdr6eky)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌟 Overview
+This application provides a streamlined intake experience for hotel GMs and department heads. By collecting public listing links (Google, TripAdvisor, OTAs) and property context, it enables automated analysis that generates a structured, hotel-ready improvement plan.
 
-## React Compiler
+## ✨ Key Features
+- **4-Step Wizard:** Simple, intuitive intake for property info, dates, and links.
+- **Smart Validation:** URL domain enforcement and keyword validation.
+- **Action Dashboard:** 
+  - **KPIs:** Sentiment, Volume, Rating, and Response trends.
+  - **Sentiment Drivers:** Top positive and negative themes.
+  - **Prioritized Actions:** 14-day roadmap with departmental owners.
+  - **OTA Comparison:** Performance benchmarking across platforms.
+- **GM-Ready Reports:** Executive summaries designed for leadership.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
+- **Frontend:** React (Vite), TypeScript, Tailwind CSS
+- **Icons:** Lucide React
+- **Deployment:** GitHub Pages & Actions
+- **Analysis (Backend):** Power Automate & Hidden AI Prompts (MVP logic)
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Local Development
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/bcali/hotel-intake-form.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the dev server:
+   ```bash
+   npm run dev
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Deployment
+This project is configured for automated deployment to GitHub Pages via GitHub Actions. Any push to the `main` branch will trigger a build and deploy.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📄 Documentation
+- [Full Product Requirements Document (PRD)](./PRD.md)
+- [Hotel GM Strategy Presentation](https://gamma.app/docs/q7rs4knnhdr6eky)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+*Internal use only for hotel property management teams.*
