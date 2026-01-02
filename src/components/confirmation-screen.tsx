@@ -1,5 +1,5 @@
-import { CheckCircle2, ArrowRight, Download, Mail, ExternalLink } from 'lucide-react';
-import { FormData } from '../App';
+import { CheckCircle2, ArrowRight, Download, Mail } from 'lucide-react';
+import type { FormData } from '../App';
 
 interface ConfirmationScreenProps {
   formData: FormData;

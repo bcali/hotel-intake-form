@@ -9,17 +9,13 @@ import {
   Share2, 
   Filter,
   RefreshCcw,
-  ChevronDown,
   LayoutDashboard,
   MessageSquare,
   Users,
   Building2,
   ExternalLink,
   Star,
-  Globe,
-  Instagram,
-  Facebook,
-  Video
+  Globe
 } from 'lucide-react';
 
 export interface DashboardFilters {
@@ -39,14 +35,6 @@ export function Dashboard() {
 
   const updateFilters = (newFilters: Partial<DashboardFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-  };
-
-  const handleReset = () => {
-    setFilters({
-      department: 'all',
-      source: 'all',
-      period: 'last_30_days'
-    });
   };
 
   return (

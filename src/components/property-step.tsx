@@ -1,4 +1,4 @@
-import { FormData } from '../App';
+import type { FormData } from '../App';
 import { ChipsInput } from './chips-input';
 import { ChevronRight } from 'lucide-react';
 

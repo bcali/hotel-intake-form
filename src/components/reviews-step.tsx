@@ -1,4 +1,4 @@
-import { FormData } from '../App';
+import type { FormData } from '../App';
 import { ChevronLeft, ChevronRight, Info, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
