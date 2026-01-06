@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import type { FormData } from '../App';
 import { ChevronLeft, Check, Instagram, Facebook, Video, Youtube, MapPin, Search, Plus } from 'lucide-react';
 

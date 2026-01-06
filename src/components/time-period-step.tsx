@@ -1,4 +1,4 @@
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import type { FormData } from '../App';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 
