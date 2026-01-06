@@ -1,6 +1,4 @@
-import { type FormEvent } from 'react';
-import type { FormData } from '../App';
-import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { FormData } from '../App';
 
 interface TimePeriodStepProps {
   formData: FormData;
@@ -11,96 +9,124 @@ interface TimePeriodStepProps {
 
 export function TimePeriodStep({ formData, updateFormData, onNext, onBack }: TimePeriodStepProps) {
   const isValid = formData.startDate !== '' && formData.endDate !== '';
-
+  
   const validateDates = () => {
-    if (!formData.startDate || !formData.endDate) return null;
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    if (end < start) return "End date must be after start date";
-    
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays > 180) return "Max analysis period is 180 days";
-    
-    return null;
+    if (formData.startDate && formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      
+      if (end <= start) {
+        return 'End date must be after start date';
+      }
+      
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 180) {
+        return 'Maximum date range is 180 days';
+      }
+    }
+    return '';
   };
 
   const dateError = validateDates();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid && !dateError) onNext();
+    if (isValid && !dateError) {
+      onNext();
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold text-gray-900">Analysis Time Period</h2>
-        <p className="text-sm text-gray-500">Define the date range for the review analysis</p>
-      </div>
+      <div>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-900 text-left">Time period</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Start Date *</label>
-          <input
-            type="date"
+        {/* Date Range */}
+        <div className="mb-6 text-left">
+          <label className="block text-gray-700 font-medium mb-2">
+            Report period <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="startDate" className="block text-sm text-gray-600 mb-1">
+                Start date
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                value={formData.startDate}
+                onChange={(e) => updateFormData({ startDate: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate" className="block text-sm text-gray-600 mb-1">
+                End date
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                value={formData.endDate}
+                onChange={(e) => updateFormData({ endDate: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                required
+              />
+            </div>
+          </div>
+          {dateError && (
+            <p className="text-sm text-red-600 mt-2">{dateError}</p>
+          )}
+          <p className="text-sm text-gray-500 mt-2">
+            We'll analyze reviews from this period. Maximum 180 days.
+          </p>
+        </div>
+
+        {/* Comparison Period */}
+        <div className="mb-6 text-left">
+          <label htmlFor="comparisonPeriod" className="block text-gray-700 font-medium mb-2">
+            Comparison period <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="comparisonPeriod"
+            value={formData.comparisonPeriod}
+            onChange={(e) => updateFormData({ comparisonPeriod: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            value={formData.startDate}
-            onChange={(e) => updateFormData({ startDate: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">End Date *</label>
-          <input
-            type="date"
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            value={formData.endDate}
-            onChange={(e) => updateFormData({ endDate: e.target.value })}
-          />
+          >
+            <option value="previous-period">Previous period (same length)</option>
+            <option value="previous-month">Previous month</option>
+            <option value="previous-quarter">Previous quarter</option>
+            <option value="none">None</option>
+          </select>
+          <p className="text-sm text-gray-500 mt-1">
+            Compare your results to see if things are improving
+          </p>
         </div>
       </div>
 
-      {dateError && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-          <AlertCircle size={16} />
-          {dateError}
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Comparison Period</label>
-        <select
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
-          value={formData.comparisonPeriod}
-          onChange={(e) => updateFormData({ comparisonPeriod: e.target.value })}
-        >
-          <option value="previous_period">Previous Period (e.g. previous 30 days)</option>
-          <option value="previous_year">Previous Year (YoY)</option>
-          <option value="none">No Comparison</option>
-        </select>
-      </div>
-
+      {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100 transition-all border border-gray-200"
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
         >
-          <ChevronLeft size={18} /> Back
+          Back
         </button>
         <button
           type="submit"
           disabled={!isValid || !!dateError}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white transition-all ${
-            isValid && !dateError ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
-          }`}
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          Next Step <ChevronRight size={18} />
+          Continue
         </button>
       </div>
     </form>
   );
 }
+
+
 

@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react';
-import type { FormData } from '../App';
-import { ChevronLeft, ChevronRight, Info, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { FormData } from '../App';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReviewsStepProps {
   formData: FormData;
@@ -9,181 +9,287 @@ interface ReviewsStepProps {
   onBack: () => void;
 }
 
-const OTA_LIST = ['Booking.com', 'Agoda', 'Expedia', 'Other'];
-
 export function ReviewsStep({ formData, updateFormData, onNext, onBack }: ReviewsStepProps) {
   const [showOptional, setShowOptional] = useState(false);
 
   const validateUrl = (url: string, domain: string) => {
-    if (!url) return true;
+    if (!url) return '';
     try {
-      const u = new URL(url);
-      return u.hostname.includes(domain);
+      const urlObj = new URL(url);
+      if (!urlObj.hostname.includes(domain)) {
+        return `Please enter a valid ${domain} URL`;
+      }
     } catch {
-      return false;
+      return 'Please enter a valid URL';
     }
+    return '';
   };
 
-  const googleError = formData.googleMapsUrl && !validateUrl(formData.googleMapsUrl, 'google.com');
-  const tripAdvisorError = formData.tripAdvisorUrl && !validateUrl(formData.tripAdvisorUrl, 'tripadvisor');
+  const googleError = validateUrl(formData.googleMapsUrl, 'google.com');
+  const tripadvisorError = validateUrl(formData.tripadvisorUrl, 'tripadvisor');
+
+  const otaErrors = {
+    booking: formData.selectedOTAs.includes('booking') ? validateUrl(formData.bookingUrl, 'booking.com') : '',
+    agoda: formData.selectedOTAs.includes('agoda') ? validateUrl(formData.agodaUrl, 'agoda.com') : '',
+    expedia: formData.selectedOTAs.includes('expedia') ? validateUrl(formData.expediaUrl, 'expedia') : '',
+  };
 
   const isValid = 
-    formData.googleMapsUrl.trim() !== '' && 
-    formData.tripAdvisorUrl.trim() !== '' &&
-    !googleError && 
-    !tripAdvisorError &&
-    formData.selectedOTAs.every(ota => formData.otaUrls[ota]?.trim() !== '');
+    formData.googleMapsUrl !== '' &&
+    !googleError &&
+    formData.tripadvisorUrl !== '' &&
+    !tripadvisorError &&
+    formData.selectedOTAs.length > 0 &&
+    !otaErrors.booking &&
+    !otaErrors.agoda &&
+    !otaErrors.expedia;
 
   const handleOTAToggle = (ota: string) => {
-    const newSelected = formData.selectedOTAs.includes(ota)
+    const newOTAs = formData.selectedOTAs.includes(ota)
       ? formData.selectedOTAs.filter(o => o !== ota)
       : [...formData.selectedOTAs, ota];
-    
-    updateFormData({ selectedOTAs: newSelected });
+    updateFormData({ selectedOTAs: newOTAs });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid) onNext();
+    if (isValid) {
+      onNext();
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold text-gray-900">Review & OTA Links</h2>
-        <p className="text-sm text-gray-500">Links to your public profiles for review collection</p>
-      </div>
+      <div>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-900 text-left">Review sources</h2>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Google Maps URL *</label>
+        {/* Google Maps */}
+        <div className="mb-6 text-left">
+          <label htmlFor="googleMaps" className="block text-gray-700 font-medium mb-2">
+            Google Maps listing URL <span className="text-red-500">*</span>
+          </label>
           <input
             type="url"
-            required
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-              googleError ? 'border-red-300' : 'border-gray-300'
-            }`}
-            placeholder="https://www.google.com/maps/place/..."
+            id="googleMaps"
             value={formData.googleMapsUrl}
             onChange={(e) => updateFormData({ googleMapsUrl: e.target.value })}
+            placeholder="https://maps.google.com/..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            required
           />
+          <p className="text-sm text-gray-500 mt-1">
+            Open your Google Maps listing and paste the link
+          </p>
           {googleError && (
-            <p className="text-xs text-red-600 flex items-center gap-1">
-              <AlertTriangle size={12} /> Please enter a valid Google Maps URL
-            </p>
+            <p className="text-sm text-red-600 mt-1">{googleError}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">TripAdvisor URL *</label>
+        {/* TripAdvisor */}
+        <div className="mb-6 text-left">
+          <label htmlFor="tripadvisor" className="block text-gray-700 font-medium mb-2">
+            TripAdvisor hotel URL <span className="text-red-500">*</span>
+          </label>
           <input
             type="url"
-            required
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-              tripAdvisorError ? 'border-red-300' : 'border-gray-300'
-            }`}
+            id="tripadvisor"
+            value={formData.tripadvisorUrl}
+            onChange={(e) => updateFormData({ tripadvisorUrl: e.target.value })}
             placeholder="https://www.tripadvisor.com/Hotel_Review-..."
-            value={formData.tripAdvisorUrl}
-            onChange={(e) => updateFormData({ tripAdvisorUrl: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            required
           />
-          {tripAdvisorError && (
-            <p className="text-xs text-red-600 flex items-center gap-1">
-              <AlertTriangle size={12} /> Please enter a valid TripAdvisor URL
-            </p>
+          {tripadvisorError && (
+            <p className="text-sm text-red-600 mt-1">{tripadvisorError}</p>
           )}
         </div>
-      </div>
 
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">Select OTAs to include</label>
-        <div className="flex flex-wrap gap-2">
-          {OTA_LIST.map(ota => (
-            <button
-              key={ota}
-              type="button"
-              onClick={() => handleOTAToggle(ota)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                formData.selectedOTAs.includes(ota)
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              {ota}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {formData.selectedOTAs.map(ota => (
-        <div key={ota} className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-          <label className="block text-sm font-medium text-gray-700">{ota} URL *</label>
-          <input
-            type="url"
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            placeholder={`https://www.${ota.toLowerCase().replace(' ', '')}.com/...`}
-            value={formData.otaUrls[ota] || ''}
-            onChange={(e) => updateFormData({ 
-              otaUrls: { ...formData.otaUrls, [ota]: e.target.value } 
-            })}
-          />
-        </div>
-      ))}
-
-      <div className="border-t border-gray-100 pt-4">
-        <button
-          type="button"
-          onClick={() => setShowOptional(!showOptional)}
-          className="text-sm font-medium text-blue-600 flex items-center gap-1 hover:text-blue-700"
-        >
-          <Info size={16} /> {showOptional ? 'Hide' : 'Add'} optional review counts & ratings
-        </button>
-
-        {showOptional && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-in fade-in slide-in-from-top-2">
+        {/* OTA Selection */}
+        <div className="mb-6 text-left">
+          <label className="block text-gray-700 font-medium mb-3">
+            Which OTAs do you list on? <span className="text-red-500">*</span>
+          </label>
+          <div className="space-y-3">
+            {/* Booking.com */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Total Reviews (est.)</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 1,240"
-                value={formData.totalReviews}
-                onChange={(e) => updateFormData({ totalReviews: e.target.value })}
-              />
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.selectedOTAs.includes('booking')}
+                  onChange={() => handleOTAToggle('booking')}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-gray-700">Booking.com</span>
+              </label>
+              {formData.selectedOTAs.includes('booking') && (
+                <input
+                  type="url"
+                  value={formData.bookingUrl}
+                  onChange={(e) => updateFormData({ bookingUrl: e.target.value })}
+                  placeholder="https://www.booking.com/hotel/..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  required
+                />
+              )}
+              {otaErrors.booking && (
+                <p className="text-sm text-red-600">{otaErrors.booking}</p>
+              )}
             </div>
+
+            {/* Agoda */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Avg. Rating (est.)</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 4.5"
-                value={formData.averageRating}
-                onChange={(e) => updateFormData({ averageRating: e.target.value })}
-              />
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.selectedOTAs.includes('agoda')}
+                  onChange={() => handleOTAToggle('agoda')}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-gray-700">Agoda</span>
+              </label>
+              {formData.selectedOTAs.includes('agoda') && (
+                <input
+                  type="url"
+                  value={formData.agodaUrl}
+                  onChange={(e) => updateFormData({ agodaUrl: e.target.value })}
+                  placeholder="https://www.agoda.com/..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  required
+                />
+              )}
+              {otaErrors.agoda && (
+                <p className="text-sm text-red-600">{otaErrors.agoda}</p>
+              )}
+            </div>
+
+            {/* Expedia */}
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.selectedOTAs.includes('expedia')}
+                  onChange={() => handleOTAToggle('expedia')}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-gray-700">Expedia</span>
+              </label>
+              {formData.selectedOTAs.includes('expedia') && (
+                <input
+                  type="url"
+                  value={formData.expediaUrl}
+                  onChange={(e) => updateFormData({ expediaUrl: e.target.value })}
+                  placeholder="https://www.expedia.com/..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  required
+                />
+              )}
+              {otaErrors.expedia && (
+                <p className="text-sm text-red-600">{otaErrors.expedia}</p>
+              )}
+            </div>
+
+            {/* Other */}
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.selectedOTAs.includes('other')}
+                  onChange={() => handleOTAToggle('other')}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-gray-700">Other</span>
+              </label>
+              {formData.selectedOTAs.includes('other') && (
+                <input
+                  type="url"
+                  value={formData.otherOtaUrl}
+                  onChange={(e) => updateFormData({ otherOtaUrl: e.target.value })}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              )}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Optional Section */}
+        <div className="border-t border-gray-200 pt-6 text-left">
+          <button
+            type="button"
+            onClick={() => setShowOptional(!showOptional)}
+            className="flex items-center text-gray-700 hover:text-gray-900 mb-4 bg-transparent border-none p-0 cursor-pointer"
+          >
+            {showOptional ? (
+              <ChevronUp className="w-5 h-5 mr-2" />
+            ) : (
+              <ChevronDown className="w-5 h-5 mr-2" />
+            )}
+            <span className="font-medium">If you have it (optional)</span>
+          </button>
+
+          {showOptional && (
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="totalReviews" className="block text-gray-700 font-medium mb-2">
+                  Total reviews in period
+                </label>
+                <input
+                  type="number"
+                  id="totalReviews"
+                  value={formData.totalReviews}
+                  onChange={(e) => updateFormData({ totalReviews: e.target.value })}
+                  placeholder="150"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Approximate number across all sources
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="averageRating" className="block text-gray-700 font-medium mb-2">
+                  Average rating/score in period
+                </label>
+                <input
+                  type="number"
+                  id="averageRating"
+                  value={formData.averageRating}
+                  onChange={(e) => updateFormData({ averageRating: e.target.value })}
+                  placeholder="4.2"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Out of 5 stars
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100 transition-all border border-gray-200"
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors bg-transparent cursor-pointer"
         >
-          <ChevronLeft size={18} /> Back
+          Back
         </button>
         <button
           type="submit"
           disabled={!isValid}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white transition-all ${
-            isValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
-          }`}
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
-          Next Step <ChevronRight size={18} />
+          Continue
         </button>
       </div>
     </form>
   );
 }
+
+
 

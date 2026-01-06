@@ -8,35 +8,41 @@ import { ConfirmationScreen } from './components/confirmation-screen';
 import { Dashboard } from './components/dashboard';
 
 export interface FormData {
+  // Step 1
   hotelName: string;
   brand: string;
   country: string;
   city: string;
   keywords: string[];
   localLanguage: string;
+  
+  // Step 2
   startDate: string;
   endDate: string;
   comparisonPeriod: string;
+  
+  // Step 3
   googleMapsUrl: string;
-  tripAdvisorUrl: string;
+  tripadvisorUrl: string;
   selectedOTAs: string[];
-  otaUrls: Record<string, string>;
-  totalReviews?: string;
-  averageRating?: string;
-  socialLinks: {
-    instagram?: string;
-    facebook?: string;
-    tiktok?: string;
-    youtube?: string;
-    taggedLocation?: string;
-    tiktokSearchUrl?: string;
-  };
-  notes: {
-    topGuestIssues?: string;
-    recentChanges?: string;
-    recentChangesNotes?: string;
-    additionalNotes?: string;
-  };
+  bookingUrl: string;
+  agodaUrl: string;
+  expediaUrl: string;
+  otherOtaUrl: string;
+  totalReviews: string;
+  averageRating: string;
+  
+  // Step 4
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  snapchat: string;
+  youtube: string;
+  taggedLocationUrl: string;
+  tiktokSearchUrl: string;
+  guestIssues: string;
+  recentChanges: string[];
+  additionalNotes: string;
 }
 
 export default function App() {
@@ -49,16 +55,29 @@ export default function App() {
     country: '',
     city: '',
     keywords: [],
-    localLanguage: 'English',
+    localLanguage: '',
     startDate: '',
     endDate: '',
-    comparisonPeriod: 'previous_period',
+    comparisonPeriod: 'previous-period',
     googleMapsUrl: '',
-    tripAdvisorUrl: '',
+    tripadvisorUrl: '',
     selectedOTAs: [],
-    otaUrls: {},
-    socialLinks: {},
-    notes: {}
+    bookingUrl: '',
+    agodaUrl: '',
+    expediaUrl: '',
+    otherOtaUrl: '',
+    totalReviews: '',
+    averageRating: '',
+    instagram: '',
+    facebook: '',
+    tiktok: '',
+    snapchat: '',
+    youtube: '',
+    taggedLocationUrl: '',
+    tiktokSearchUrl: '',
+    guestIssues: '',
+    recentChanges: [],
+    additionalNotes: '',
   });
 
   const updateFormData = (data: Partial<FormData>) => {
@@ -81,9 +100,36 @@ export default function App() {
 
   const handleSubmit = async () => {
     console.log('Submitting form data:', formData);
-    // Placeholder for actual submission logic
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // In a real app, this would be your Power Automate HTTP endpoint
+    const POWER_AUTOMATE_URL = import.meta.env.VITE_POWER_AUTOMATE_URL || 'https://prod-XX.westus.logic.azure.com:443/workflows/...';
+    
+    try {
+      // For MVP, we'll log it and proceed. 
+      // In production, you'd uncomment the fetch below.
+      /*
+      const response = await fetch(POWER_AUTOMATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submissionId: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          ...formData
+        }),
+      });
+      if (!response.ok) throw new Error('Submission failed');
+      */
+      
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('There was an error submitting your form. Please try again.');
+    }
+  };
+
+  const handleSaveDraft = () => {
+    alert('Draft saved! You can continue later.');
   };
 
   const handleViewDashboard = () => {
@@ -92,7 +138,7 @@ export default function App() {
   };
 
   if (showDashboard) {
-    return <Dashboard />;
+    return <Dashboard formData={formData} />;
   }
 
   if (isSubmitted) {
@@ -153,7 +199,7 @@ export default function App() {
         {/* Save Draft Button */}
         <div className="text-center">
           <button
-            onClick={() => alert('Draft saved!')}
+            onClick={handleSaveDraft}
             className="text-gray-600 hover:text-gray-800 underline bg-transparent border-none p-0 cursor-pointer"
           >
             Save & continue later

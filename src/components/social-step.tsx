@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react';
-import type { FormData } from '../App';
-import { ChevronLeft, Check, Instagram, Facebook, Video, Youtube, MapPin, Search, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { FormData } from '../App';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SocialStepProps {
   formData: FormData;
@@ -13,189 +13,260 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
   const [showSocial, setShowSocial] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleRecentChangesToggle = (change: string) => {
+    const newChanges = formData.recentChanges.includes(change)
+      ? formData.recentChanges.filter(c => c !== change)
+      : [...formData.recentChanges, change];
+    updateFormData({ recentChanges: newChanges });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold text-gray-900">Social & Internal Context</h2>
-        <p className="text-sm text-gray-500">Optional inputs to deepen the automated analysis</p>
-      </div>
+      <div>
+        <h2 className="text-2xl font-semibold mb-2 text-gray-900 text-left">Almost done!</h2>
+        <p className="text-gray-600 mb-6 text-left">
+          Add optional context to help us understand your hotel better
+        </p>
 
-      {/* Social Links Section */}
-      <div className="space-y-4">
-        <button
-          type="button"
-          onClick={() => setShowSocial(!showSocial)}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
-        >
-          <div className={`p-1 rounded-full border ${showSocial ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}`}>
-            <Plus size={14} className={`transition-transform ${showSocial ? 'rotate-45' : ''}`} />
-          </div>
-          Add Social Media Links
-        </button>
+        {/* Social Links (Optional) */}
+        <div className="border border-gray-200 rounded-lg p-4 mb-6">
+          <button
+            type="button"
+            onClick={() => setShowSocial(!showSocial)}
+            className="flex items-center justify-between w-full text-left bg-transparent border-none p-0 cursor-pointer"
+          >
+            <div>
+              <span className="text-gray-900 font-medium">
+                Social links <span className="text-gray-500 font-normal">(optional)</span>
+              </span>
+              <p className="text-sm text-gray-500 mt-1">
+                Helps explain what guests see before booking
+              </p>
+            </div>
+            {showSocial ? (
+              <ChevronUp className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
 
-        {showSocial && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Instagram size={16} className="text-pink-600" /> Instagram URL
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://instagram.com/..."
-                value={formData.socialLinks.instagram}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, instagram: e.target.value } })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Facebook size={16} className="text-blue-600" /> Facebook Page
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://facebook.com/..."
-                value={formData.socialLinks.facebook}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, facebook: e.target.value } })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Video size={16} className="text-black" /> TikTok Account
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://tiktok.com/@..."
-                value={formData.socialLinks.tiktok}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, tiktok: e.target.value } })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Search size={16} className="text-black" /> TikTok Search (Property Name)
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://tiktok.com/search?q=..."
-                value={formData.socialLinks.tiktokSearchUrl}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, tiktokSearchUrl: e.target.value } })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Youtube size={16} className="text-red-600" /> YouTube Channel
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://youtube.com/..."
-                value={formData.socialLinks.youtube}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, youtube: e.target.value } })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <MapPin size={16} className="text-gray-600" /> Tagged Location (IG/FB)
-              </label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="https://..."
-                value={formData.socialLinks.taggedLocation}
-                onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, taggedLocation: e.target.value } })}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Internal Notes Section */}
-      <div className="space-y-4 border-t border-gray-100 pt-6">
-        <button
-          type="button"
-          onClick={() => setShowNotes(!showNotes)}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
-        >
-          <div className={`p-1 rounded-full border ${showNotes ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}`}>
-            <Plus size={14} className={`transition-transform ${showNotes ? 'rotate-45' : ''}`} />
-          </div>
-          Add Internal Context & Notes
-        </button>
-
-        {showNotes && (
-          <div className="space-y-4 p-4 bg-gray-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Top Guest Issues (Staff Observation)</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white h-24"
-                placeholder="What are guests complaining about most in person?"
-                value={formData.notes.topGuestIssues}
-                onChange={(e) => updateFormData({ notes: { ...formData.notes, topGuestIssues: e.target.value } })}
-              />
-            </div>
-            
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Have there been recent property changes?</label>
-              <div className="flex gap-4">
-                {['Yes', 'No'].map(val => (
-                  <label key={val} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="recentChanges"
-                      checked={formData.notes.recentChanges === val}
-                      onChange={() => updateFormData({ notes: { ...formData.notes, recentChanges: val } })}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">{val}</span>
-                  </label>
-                ))}
-              </div>
-              {formData.notes.recentChanges === 'Yes' && (
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white h-20 animate-in fade-in zoom-in-95 duration-200"
-                  placeholder="Describe recent renovations, staff changes, etc."
-                  value={formData.notes.recentChangesNotes}
-                  onChange={(e) => updateFormData({ notes: { ...formData.notes, recentChangesNotes: e.target.value } })}
+          {showSocial && (
+            <div className="mt-6 space-y-4">
+              <div className="text-left">
+                <label htmlFor="instagram" className="block text-gray-700 mb-2">
+                  Instagram handle or URL
+                </label>
+                <input
+                  type="text"
+                  id="instagram"
+                  value={formData.instagram}
+                  onChange={(e) => updateFormData({ instagram: e.target.value })}
+                  placeholder="@yourhotel or https://instagram.com/yourhotel"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
-              )}
-            </div>
+              </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Additional Notes for Analyst</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white h-20"
-                placeholder="Any other context we should know?"
-                value={formData.notes.additionalNotes}
-                onChange={(e) => updateFormData({ notes: { ...formData.notes, additionalNotes: e.target.value } })}
-              />
+              <div className="text-left">
+                <label htmlFor="facebook" className="block text-gray-700 mb-2">
+                  Facebook page URL
+                </label>
+                <input
+                  type="text"
+                  id="facebook"
+                  value={formData.facebook}
+                  onChange={(e) => updateFormData({ facebook: e.target.value })}
+                  placeholder="https://facebook.com/yourhotel"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
+              <div className="text-left">
+                <label htmlFor="tiktok" className="block text-gray-700 mb-2">
+                  TikTok handle or URL
+                </label>
+                <input
+                  type="text"
+                  id="tiktok"
+                  value={formData.tiktok}
+                  onChange={(e) => updateFormData({ tiktok: e.target.value })}
+                  placeholder="@yourhotel"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
+              <div className="text-left">
+                <label htmlFor="youtube" className="block text-gray-700 mb-2">
+                  YouTube channel
+                </label>
+                <input
+                  type="text"
+                  id="youtube"
+                  value={formData.youtube}
+                  onChange={(e) => updateFormData({ youtube: e.target.value })}
+                  placeholder="https://youtube.com/c/yourhotel"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600 mb-3 text-left font-medium">UGC shortcuts</p>
+                
+                <div className="mb-3 text-left">
+                  <label htmlFor="taggedLocation" className="block text-gray-700 mb-2">
+                    Tagged location URL (Instagram)
+                  </label>
+                  <input
+                    type="text"
+                    id="taggedLocation"
+                    value={formData.taggedLocationUrl}
+                    onChange={(e) => updateFormData({ taggedLocationUrl: e.target.value })}
+                    placeholder="https://instagram.com/explore/locations/..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                </div>
+
+                <div className="text-left">
+                  <label htmlFor="tiktokSearch" className="block text-gray-700 mb-2">
+                    TikTok search URL for hotel name
+                  </label>
+                  <input
+                    type="text"
+                    id="tiktokSearch"
+                    value={formData.tiktokSearchUrl}
+                    onChange={(e) => updateFormData({ tiktokSearchUrl: e.target.value })}
+                    placeholder="https://tiktok.com/search?q=yourhotel"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Internal Notes (Optional) */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <button
+            type="button"
+            onClick={() => setShowNotes(!showNotes)}
+            className="flex items-center justify-between w-full text-left bg-transparent border-none p-0 cursor-pointer"
+          >
+            <div>
+              <span className="text-gray-900 font-medium">
+                Internal notes <span className="text-gray-500 font-normal">(optional)</span>
+              </span>
+              <p className="text-sm text-gray-500 mt-1">
+                Context that helps us focus on what matters
+              </p>
+            </div>
+            {showNotes ? (
+              <ChevronUp className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+
+          {showNotes && (
+            <div className="mt-6 space-y-4">
+              <div className="text-left">
+                <label htmlFor="guestIssues" className="block text-gray-700 mb-2">
+                  Top 3 guest issues you already know
+                </label>
+                <textarea
+                  id="guestIssues"
+                  value={formData.guestIssues}
+                  onChange={(e) => updateFormData({ guestIssues: e.target.value })}
+                  placeholder="E.g., WiFi speed, breakfast wait times, pool temperature..."
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                />
+              </div>
+
+              <div className="text-left">
+                <label className="block text-gray-700 mb-3 font-medium">
+                  Recent changes (last 90 days)
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.recentChanges.includes('renovation')}
+                      onChange={() => handleRecentChangesToggle('renovation')}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Renovation</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.recentChanges.includes('restaurant')}
+                      onChange={() => handleRecentChangesToggle('restaurant')}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Restaurant/amenity changes</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.recentChanges.includes('staffing')}
+                      onChange={() => handleRecentChangesToggle('staffing')}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Staffing changes</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.recentChanges.includes('maintenance')}
+                      onChange={() => handleRecentChangesToggle('maintenance')}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Pool/area under maintenance</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="text-left">
+                <label htmlFor="additionalNotes" className="block text-gray-700 mb-2">
+                  Anything you want us to pay attention to
+                </label>
+                <textarea
+                  id="additionalNotes"
+                  value={formData.additionalNotes}
+                  onChange={(e) => updateFormData({ additionalNotes: e.target.value })}
+                  placeholder="Any additional context that helps us understand your situation..."
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex justify-between pt-6">
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-4">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100 transition-all border border-gray-200"
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors bg-transparent cursor-pointer"
         >
-          <ChevronLeft size={18} /> Back
+          Back
         </button>
         <button
           type="submit"
-          className="flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 transition-all shadow-md hover:shadow-lg active:scale-95"
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
         >
-          Generate Report <Check size={18} />
+          Generate my Hotel Review Improvement Plan
         </button>
       </div>
     </form>
   );
 }
+
+
 
