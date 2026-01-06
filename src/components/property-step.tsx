@@ -1,5 +1,7 @@
-import { FormData } from '../App';
+import { type FormEvent } from 'react';
+import type { FormData } from '../App';
 import { ChipsInput } from './chips-input';
+import { ChevronRight } from 'lucide-react';
 
 interface PropertyStepProps {
   formData: FormData;
@@ -9,142 +11,110 @@ interface PropertyStepProps {
 
 export function PropertyStep({ formData, updateFormData, onNext }: PropertyStepProps) {
   const isValid = 
-    formData.hotelName.trim() !== '' &&
-    formData.brand.trim() !== '' &&
-    formData.country.trim() !== '' &&
-    formData.city.trim() !== '' &&
-    formData.keywords.length >= 2;
+    formData.hotelName.trim() !== '' && 
+    formData.brand.trim() !== '' && 
+    formData.country.trim() !== '' && 
+    formData.city.trim() !== '';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (isValid) {
-      onNext();
-    }
+    if (isValid) onNext();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold mb-6 text-gray-900">Property details</h2>
+      <div className="space-y-1">
+        <h2 className="text-xl font-bold text-gray-900">Property Information</h2>
+        <p className="text-sm text-gray-500">Basic identifiers for your hotel property</p>
+      </div>
 
-        {/* Hotel Name */}
-        <div className="mb-6 text-left">
-          <label htmlFor="hotelName" className="block text-gray-700 font-medium mb-2">
-            Hotel name <span className="text-red-500">*</span>
-          </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Hotel Name *</label>
           <input
             type="text"
-            id="hotelName"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="e.g. Grand Resort & Spa"
             value={formData.hotelName}
             onChange={(e) => updateFormData({ hotelName: e.target.value })}
-            placeholder="Avani+ Khao Lak Resort"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            required
           />
         </div>
-
-        {/* Brand */}
-        <div className="mb-6 text-left">
-          <label htmlFor="brand" className="block text-gray-700 font-medium mb-2">
-            Brand <span className="text-red-500">*</span>
-          </label>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Brand *</label>
           <input
             type="text"
-            id="brand"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="e.g. Hilton, Marriott"
             value={formData.brand}
             onChange={(e) => updateFormData({ brand: e.target.value })}
-            placeholder="Avani"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            required
           />
-          <p className="text-sm text-gray-500 mt-1">Example: Marriott, Hilton, Avani</p>
         </div>
-
-        {/* Country */}
-        <div className="mb-6 text-left">
-          <label htmlFor="country" className="block text-gray-700 font-medium mb-2">
-            Country <span className="text-red-500">*</span>
-          </label>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Country *</label>
           <input
             type="text"
-            id="country"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="e.g. Thailand"
             value={formData.country}
             onChange={(e) => updateFormData({ country: e.target.value })}
-            placeholder="Thailand"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            required
           />
         </div>
-
-        {/* City / Area */}
-        <div className="mb-6 text-left">
-          <label htmlFor="city" className="block text-gray-700 font-medium mb-2">
-            City / Area <span className="text-red-500">*</span>
-          </label>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">City/Area *</label>
           <input
             type="text"
-            id="city"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="e.g. Bangkok"
             value={formData.city}
             onChange={(e) => updateFormData({ city: e.target.value })}
-            placeholder="Khao Lak, Phang Nga"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            required
           />
-        </div>
-
-        {/* Keywords */}
-        <div className="mb-6 text-left">
-          <label className="block text-gray-700 font-medium mb-2">
-            Hotel keywords / variants <span className="text-red-500">*</span>
-          </label>
-          <ChipsInput
-            values={formData.keywords}
-            onChange={(keywords) => updateFormData({ keywords })}
-            placeholder="Type and press Enter"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Add common short names guests use (minimum 2)
-          </p>
-          <p className="text-sm text-gray-500">
-            Example: "Avani Khao Lak", "Avani+ Khao Lak", "Avani Resort Khao Lak"
-          </p>
-          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              These keywords help us avoid mixing your hotel with other properties.
-            </p>
-          </div>
-        </div>
-
-        {/* Local Language (Optional) */}
-        <div className="mb-6 text-left">
-          <label htmlFor="localLanguage" className="block text-gray-700 font-medium mb-2">
-            Local language spelling <span className="text-gray-500">(optional)</span>
-          </label>
-          <input
-            type="text"
-            id="localLanguage"
-            value={formData.localLanguage}
-            onChange={(e) => updateFormData({ localLanguage: e.target.value })}
-            placeholder="อวานี+ เขาหลัก รีสอร์ท"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-          <p className="text-sm text-gray-500 mt-1">Thai, Arabic, Japanese, etc.</p>
         </div>
       </div>
 
-      {/* Continue Button */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Keywords (Optional)</label>
+        <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+          Enter important keywords related to your resort to further personalize the output. 
+          Things like pet friendly, location, restaurants nearby, activities etc.
+        </p>
+        <ChipsInput
+          values={formData.keywords}
+          onChange={(keywords) => updateFormData({ keywords })}
+          placeholder="Type keyword and press Enter..."
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Local Language</label>
+        <select
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+          value={formData.localLanguage}
+          onChange={(e) => updateFormData({ localLanguage: e.target.value })}
+        >
+          <option>English</option>
+          <option>Thai</option>
+          <option>Japanese</option>
+          <option>Simplified Chinese</option>
+          <option>Traditional Chinese</option>
+        </select>
+      </div>
+
       <div className="flex justify-end pt-4">
         <button
           type="submit"
           disabled={!isValid}
-          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white transition-all ${
+            isValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
+          }`}
         >
-          Continue
+          Next Step <ChevronRight size={18} />
         </button>
       </div>
     </form>
   );
 }
-
-
 
