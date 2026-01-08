@@ -1,6 +1,6 @@
-import { RankedThemeList, Theme } from './ranked-theme-list';
+import { RankedThemeList, type Theme } from './ranked-theme-list';
 import { OwnerBreakdown } from './owner-breakdown';
-import { DashboardFilters } from '../dashboard';
+import type { DashboardFilters } from '../dashboard';
 import { Star } from 'lucide-react';
 import type { FormData } from '../../App';
 
@@ -9,7 +9,7 @@ interface PositiveDriversProps {
   formData: FormData;
 }
 
-export function PositiveDrivers({ filters, formData }: PositiveDriversProps) {
+export function PositiveDrivers({ filters: _filters, formData }: PositiveDriversProps) {
   const mainKeyword = formData.keywords[0] || formData.brand || 'Property';
   
   const positiveThemes: Theme[] = [

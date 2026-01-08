@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FormData } from '../App';
+import type { FormData } from '../App';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReviewsStepProps {
@@ -26,18 +26,18 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
   };
 
   const googleError = validateUrl(formData.googleMapsUrl, 'google.com');
-  const tripadvisorError = validateUrl(formData.tripadvisorUrl, 'tripadvisor');
+  const tripadvisorError = validateUrl(formData.tripAdvisorUrl, 'tripadvisor');
 
   const otaErrors = {
-    booking: formData.selectedOTAs.includes('booking') ? validateUrl(formData.bookingUrl, 'booking.com') : '',
-    agoda: formData.selectedOTAs.includes('agoda') ? validateUrl(formData.agodaUrl, 'agoda.com') : '',
-    expedia: formData.selectedOTAs.includes('expedia') ? validateUrl(formData.expediaUrl, 'expedia') : '',
+    booking: formData.selectedOTAs.includes('booking') ? validateUrl(formData.otaUrls['booking'] || '', 'booking.com') : '',
+    agoda: formData.selectedOTAs.includes('agoda') ? validateUrl(formData.otaUrls['agoda'] || '', 'agoda.com') : '',
+    expedia: formData.selectedOTAs.includes('expedia') ? validateUrl(formData.otaUrls['expedia'] || '', 'expedia') : '',
   };
 
   const isValid = 
     formData.googleMapsUrl !== '' &&
     !googleError &&
-    formData.tripadvisorUrl !== '' &&
+    formData.tripAdvisorUrl !== '' &&
     !tripadvisorError &&
     formData.selectedOTAs.length > 0 &&
     !otaErrors.booking &&
@@ -93,8 +93,8 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
           <input
             type="url"
             id="tripadvisor"
-            value={formData.tripadvisorUrl}
-            onChange={(e) => updateFormData({ tripadvisorUrl: e.target.value })}
+            value={formData.tripAdvisorUrl}
+            onChange={(e) => updateFormData({ tripAdvisorUrl: e.target.value })}
             placeholder="https://www.tripadvisor.com/Hotel_Review-..."
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             required
@@ -124,8 +124,8 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
               {formData.selectedOTAs.includes('booking') && (
                 <input
                   type="url"
-                  value={formData.bookingUrl}
-                  onChange={(e) => updateFormData({ bookingUrl: e.target.value })}
+                  value={formData.otaUrls['booking'] || ''}
+                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, booking: e.target.value } })}
                   placeholder="https://www.booking.com/hotel/..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
@@ -150,8 +150,8 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
               {formData.selectedOTAs.includes('agoda') && (
                 <input
                   type="url"
-                  value={formData.agodaUrl}
-                  onChange={(e) => updateFormData({ agodaUrl: e.target.value })}
+                  value={formData.otaUrls['agoda'] || ''}
+                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, agoda: e.target.value } })}
                   placeholder="https://www.agoda.com/..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
@@ -176,8 +176,8 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
               {formData.selectedOTAs.includes('expedia') && (
                 <input
                   type="url"
-                  value={formData.expediaUrl}
-                  onChange={(e) => updateFormData({ expediaUrl: e.target.value })}
+                  value={formData.otaUrls['expedia'] || ''}
+                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, expedia: e.target.value } })}
                   placeholder="https://www.expedia.com/..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
@@ -202,8 +202,8 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
               {formData.selectedOTAs.includes('other') && (
                 <input
                   type="url"
-                  value={formData.otherOtaUrl}
-                  onChange={(e) => updateFormData({ otherOtaUrl: e.target.value })}
+                  value={formData.otaUrls['other'] || ''}
+                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, other: e.target.value } })}
                   placeholder="https://..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />

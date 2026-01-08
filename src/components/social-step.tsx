@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FormData } from '../App';
+import type { FormData } from '../App';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SocialStepProps {
@@ -14,10 +14,11 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
   const [showNotes, setShowNotes] = useState(false);
 
   const handleRecentChangesToggle = (change: string) => {
-    const newChanges = formData.recentChanges.includes(change)
-      ? formData.recentChanges.filter(c => c !== change)
-      : [...formData.recentChanges, change];
-    updateFormData({ recentChanges: newChanges });
+    const currentChanges = formData.notes.recentChanges?.split(',').filter((c: string) => c.trim()) || [];
+    const newChanges = currentChanges.includes(change)
+      ? currentChanges.filter((c: string) => c !== change)
+      : [...currentChanges, change];
+    updateFormData({ notes: { ...formData.notes, recentChanges: newChanges.join(',') } });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -64,8 +65,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 <input
                   type="text"
                   id="instagram"
-                  value={formData.instagram}
-                  onChange={(e) => updateFormData({ instagram: e.target.value })}
+                  value={formData.socialLinks.instagram || ''}
+                  onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, instagram: e.target.value } })}
                   placeholder="@yourhotel or https://instagram.com/yourhotel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
@@ -78,8 +79,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 <input
                   type="text"
                   id="facebook"
-                  value={formData.facebook}
-                  onChange={(e) => updateFormData({ facebook: e.target.value })}
+                  value={formData.socialLinks.facebook || ''}
+                  onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, facebook: e.target.value } })}
                   placeholder="https://facebook.com/yourhotel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
@@ -92,8 +93,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 <input
                   type="text"
                   id="tiktok"
-                  value={formData.tiktok}
-                  onChange={(e) => updateFormData({ tiktok: e.target.value })}
+                  value={formData.socialLinks.tiktok || ''}
+                  onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, tiktok: e.target.value } })}
                   placeholder="@yourhotel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
@@ -106,8 +107,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 <input
                   type="text"
                   id="youtube"
-                  value={formData.youtube}
-                  onChange={(e) => updateFormData({ youtube: e.target.value })}
+                  value={formData.socialLinks.youtube || ''}
+                  onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, youtube: e.target.value } })}
                   placeholder="https://youtube.com/c/yourhotel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
@@ -123,8 +124,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <input
                     type="text"
                     id="taggedLocation"
-                    value={formData.taggedLocationUrl}
-                    onChange={(e) => updateFormData({ taggedLocationUrl: e.target.value })}
+                    value={formData.socialLinks.taggedLocation || ''}
+                    onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, taggedLocation: e.target.value } })}
                     placeholder="https://instagram.com/explore/locations/..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
@@ -137,8 +138,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <input
                     type="text"
                     id="tiktokSearch"
-                    value={formData.tiktokSearchUrl}
-                    onChange={(e) => updateFormData({ tiktokSearchUrl: e.target.value })}
+                    value={formData.socialLinks.tiktokSearchUrl || ''}
+                    onChange={(e) => updateFormData({ socialLinks: { ...formData.socialLinks, tiktokSearchUrl: e.target.value } })}
                     placeholder="https://tiktok.com/search?q=yourhotel"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
@@ -178,8 +179,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 </label>
                 <textarea
                   id="guestIssues"
-                  value={formData.guestIssues}
-                  onChange={(e) => updateFormData({ guestIssues: e.target.value })}
+                value={formData.notes.topGuestIssues || ''}
+                onChange={(e) => updateFormData({ notes: { ...formData.notes, topGuestIssues: e.target.value } })}
                   placeholder="E.g., WiFi speed, breakfast wait times, pool temperature..."
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
@@ -194,7 +195,7 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.recentChanges.includes('renovation')}
+                      checked={(formData.notes.recentChanges?.split(',').includes('renovation')) || false}
                       onChange={() => handleRecentChangesToggle('renovation')}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                     />
@@ -203,7 +204,7 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.recentChanges.includes('restaurant')}
+                      checked={(formData.notes.recentChanges?.split(',').includes('restaurant')) || false}
                       onChange={() => handleRecentChangesToggle('restaurant')}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                     />
@@ -212,7 +213,7 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.recentChanges.includes('staffing')}
+                      checked={(formData.notes.recentChanges?.split(',').includes('staffing')) || false}
                       onChange={() => handleRecentChangesToggle('staffing')}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                     />
@@ -221,7 +222,7 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.recentChanges.includes('maintenance')}
+                      checked={(formData.notes.recentChanges?.split(',').includes('maintenance')) || false}
                       onChange={() => handleRecentChangesToggle('maintenance')}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                     />
@@ -236,8 +237,8 @@ export function SocialStep({ formData, updateFormData, onSubmit, onBack }: Socia
                 </label>
                 <textarea
                   id="additionalNotes"
-                  value={formData.additionalNotes}
-                  onChange={(e) => updateFormData({ additionalNotes: e.target.value })}
+                value={formData.notes.additionalNotes || ''}
+                onChange={(e) => updateFormData({ notes: { ...formData.notes, additionalNotes: e.target.value } })}
                   placeholder="Any additional context that helps us understand your situation..."
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"

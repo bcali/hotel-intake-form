@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
-import { FormData } from '../App';
+import type { FormData } from '../App';
 
 interface ConfirmationScreenProps {
   formData: FormData;

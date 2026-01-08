@@ -1,4 +1,4 @@
-import { DashboardFilters } from '../dashboard';
+import type { DashboardFilters } from '../dashboard';
 
 interface FilterBarProps {
   filters: DashboardFilters;

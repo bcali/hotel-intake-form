@@ -1,5 +1,5 @@
 import { X, Quote } from 'lucide-react';
-import { Theme } from './ranked-theme-list';
+import type { Theme } from './ranked-theme-list';
 import { SourceIcon } from './source-icon';
 
 interface ThemeDetailModalProps {

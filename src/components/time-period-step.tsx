@@ -1,4 +1,4 @@
-import { FormData } from '../App';
+import type { FormData } from '../App';
 
 interface TimePeriodStepProps {
   formData: FormData;

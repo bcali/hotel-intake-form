@@ -1,6 +1,6 @@
 import { RankedThemeList } from './ranked-theme-list';
 import { OwnerBreakdown } from './owner-breakdown';
-import { DashboardFilters } from '../dashboard';
+import type { DashboardFilters } from '../dashboard';
 import type { FormData } from '../../App';
 
 interface NegativeDriversProps {
@@ -8,7 +8,7 @@ interface NegativeDriversProps {
   formData: FormData;
 }
 
-export function NegativeDrivers({ filters, formData }: NegativeDriversProps) {
+export function NegativeDrivers({ filters: _filters, formData }: NegativeDriversProps) {
   const mainKeyword = formData.keywords[0] || formData.brand || 'Property';
   
   const negativeThemes = [

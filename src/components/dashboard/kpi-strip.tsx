@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { DashboardFilters } from '../dashboard';
+import type { DashboardFilters } from '../dashboard';
 import type { FormData } from '../../App';
 
 interface KPIStripProps {
@@ -66,7 +66,7 @@ export function KPIStrip({ filters, formData }: KPIStripProps) {
   );
 }
 
-function KPICard({ label, value, delta, deltaLabel, isPositive, showComparison }: KPICardData & { showComparison: boolean }) {
+function KPICard({ label, value, delta: _delta, deltaLabel, isPositive, showComparison }: KPICardData & { showComparison: boolean }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
       <p className="text-sm text-gray-600 mb-1 font-medium">{label}</p>

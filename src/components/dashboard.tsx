@@ -20,9 +20,13 @@ import {
 } from 'lucide-react';
 
 export interface DashboardFilters {
-  department: string;
+  startDate: string;
+  endDate: string;
+  compareEnabled: boolean;
+  comparePeriod: string;
   source: string;
-  period: string;
+  severity: string;
+  owner: string;
 }
 
 interface DashboardProps {
@@ -31,9 +35,13 @@ interface DashboardProps {
 
 export function Dashboard({ formData }: DashboardProps) {
   const [filters, setFilters] = useState<DashboardFilters>({
-    department: 'all',
+    startDate: formData.startDate || new Date().toISOString().split('T')[0],
+    endDate: formData.endDate || new Date().toISOString().split('T')[0],
+    compareEnabled: true,
+    comparePeriod: 'previous-period',
     source: 'all',
-    period: 'last_30_days'
+    severity: 'all',
+    owner: 'all',
   });
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -132,20 +140,6 @@ export function Dashboard({ formData }: DashboardProps) {
         {/* Filters Bar */}
         <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Department</span>
-              <select 
-                className="text-sm font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
-                value={filters.department}
-                onChange={(e) => updateFilters({ department: e.target.value })}
-              >
-                <option value="all">All Departments</option>
-                <option value="housekeeping">Housekeeping</option>
-                <option value="f&b">Food & Beverage</option>
-                <option value="engineering">Engineering</option>
-                <option value="front_office">Front Office</option>
-              </select>
-            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Source</span>
               <select 

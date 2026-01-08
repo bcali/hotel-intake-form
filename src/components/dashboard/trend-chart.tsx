@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DashboardFilters } from '../dashboard';
+import type { DashboardFilters } from '../dashboard';
 
 interface TrendChartProps {
   filters: DashboardFilters;
@@ -13,7 +13,7 @@ const weeklyData = [
   { week: 'Week 5', high: 11, medium: 15, low: 14 },
 ];
 
-export function TrendChart({ filters }: TrendChartProps) {
+export function TrendChart({ filters: _filters }: TrendChartProps) {
   const [viewMode, setViewMode] = useState<'severity' | 'themes'>('severity');
 
   const maxValue = Math.max(...weeklyData.map(d => d.high + d.medium + d.low));
@@ -49,7 +49,7 @@ export function TrendChart({ filters }: TrendChartProps) {
       <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-8 shadow-sm">
         {/* Chart */}
         <div className="flex items-end justify-between gap-3 md:gap-6 h-64 md:h-80">
-          {weeklyData.map((data, index) => {
+          {weeklyData.map((data, _index) => {
             const total = data.high + data.medium + data.low;
             const highHeight = (data.high / maxValue) * 100;
             const mediumHeight = (data.medium / maxValue) * 100;
