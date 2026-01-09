@@ -1,4 +1,5 @@
 import type { FormData } from '../App';
+import { AlertCircle } from 'lucide-react';
 
 interface TimePeriodStepProps {
   formData: FormData;
@@ -58,7 +59,11 @@ export function TimePeriodStep({ formData, updateFormData, onNext, onBack }: Tim
                 id="startDate"
                 value={formData.startDate}
                 onChange={(e) => updateFormData({ startDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+                  dateError
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
                 required
               />
             </div>
@@ -71,13 +76,20 @@ export function TimePeriodStep({ formData, updateFormData, onNext, onBack }: Tim
                 id="endDate"
                 value={formData.endDate}
                 onChange={(e) => updateFormData({ endDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+                  dateError
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
                 required
               />
             </div>
           </div>
           {dateError && (
-            <p className="text-sm text-red-600 mt-2">{dateError}</p>
+            <div className="flex items-center gap-1 text-sm text-red-600 mt-2">
+              <AlertCircle size={14} />
+              <span>{dateError}</span>
+            </div>
           )}
           <p className="text-sm text-gray-500 mt-2">
             We'll analyze reviews from this period. Maximum 180 days.

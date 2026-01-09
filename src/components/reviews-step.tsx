@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormData } from '../App';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
 interface ReviewsStepProps {
   formData: FormData;
@@ -74,14 +74,23 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
             value={formData.googleMapsUrl}
             onChange={(e) => updateFormData({ googleMapsUrl: e.target.value })}
             placeholder="https://maps.google.com/..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+              googleError
+                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+            }`}
             required
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Open your Google Maps listing and paste the link
-          </p>
+          {!googleError && (
+            <p className="text-sm text-gray-500 mt-1">
+              Open your Google Maps listing and paste the link
+            </p>
+          )}
           {googleError && (
-            <p className="text-sm text-red-600 mt-1">{googleError}</p>
+            <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+              <AlertCircle size={14} />
+              <span>{googleError}</span>
+            </div>
           )}
         </div>
 
@@ -96,11 +105,18 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
             value={formData.tripAdvisorUrl}
             onChange={(e) => updateFormData({ tripAdvisorUrl: e.target.value })}
             placeholder="https://www.tripadvisor.com/Hotel_Review-..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+              tripadvisorError
+                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+            }`}
             required
           />
           {tripadvisorError && (
-            <p className="text-sm text-red-600 mt-1">{tripadvisorError}</p>
+            <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+              <AlertCircle size={14} />
+              <span>{tripadvisorError}</span>
+            </div>
           )}
         </div>
 
@@ -109,6 +125,12 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
           <label className="block text-gray-700 font-medium mb-3">
             Which OTAs do you list on? <span className="text-red-500">*</span>
           </label>
+          {formData.selectedOTAs.length === 0 && (
+            <div className="flex items-center gap-1 text-sm text-amber-600 mb-2 bg-amber-50 p-2 rounded">
+              <AlertCircle size={14} />
+              <span>Please select at least one OTA platform</span>
+            </div>
+          )}
           <div className="space-y-3">
             {/* Booking.com */}
             <div className="space-y-2">
@@ -122,17 +144,26 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
                 <span className="ml-2 text-gray-700">Booking.com</span>
               </label>
               {formData.selectedOTAs.includes('booking') && (
-                <input
-                  type="url"
-                  value={formData.otaUrls['booking'] || ''}
-                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, booking: e.target.value } })}
-                  placeholder="https://www.booking.com/hotel/..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              )}
-              {otaErrors.booking && (
-                <p className="text-sm text-red-600">{otaErrors.booking}</p>
+                <>
+                  <input
+                    type="url"
+                    value={formData.otaUrls['booking'] || ''}
+                    onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, booking: e.target.value } })}
+                    placeholder="https://www.booking.com/hotel/..."
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+                      otaErrors.booking
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    required
+                  />
+                  {otaErrors.booking && (
+                    <div className="flex items-center gap-1 text-sm text-red-600">
+                      <AlertCircle size={14} />
+                      <span>{otaErrors.booking}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -148,17 +179,26 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
                 <span className="ml-2 text-gray-700">Agoda</span>
               </label>
               {formData.selectedOTAs.includes('agoda') && (
-                <input
-                  type="url"
-                  value={formData.otaUrls['agoda'] || ''}
-                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, agoda: e.target.value } })}
-                  placeholder="https://www.agoda.com/..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              )}
-              {otaErrors.agoda && (
-                <p className="text-sm text-red-600">{otaErrors.agoda}</p>
+                <>
+                  <input
+                    type="url"
+                    value={formData.otaUrls['agoda'] || ''}
+                    onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, agoda: e.target.value } })}
+                    placeholder="https://www.agoda.com/..."
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+                      otaErrors.agoda
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    required
+                  />
+                  {otaErrors.agoda && (
+                    <div className="flex items-center gap-1 text-sm text-red-600">
+                      <AlertCircle size={14} />
+                      <span>{otaErrors.agoda}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -174,17 +214,26 @@ export function ReviewsStep({ formData, updateFormData, onNext, onBack }: Review
                 <span className="ml-2 text-gray-700">Expedia</span>
               </label>
               {formData.selectedOTAs.includes('expedia') && (
-                <input
-                  type="url"
-                  value={formData.otaUrls['expedia'] || ''}
-                  onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, expedia: e.target.value } })}
-                  placeholder="https://www.expedia.com/..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              )}
-              {otaErrors.expedia && (
-                <p className="text-sm text-red-600">{otaErrors.expedia}</p>
+                <>
+                  <input
+                    type="url"
+                    value={formData.otaUrls['expedia'] || ''}
+                    onChange={(e) => updateFormData({ otaUrls: { ...formData.otaUrls, expedia: e.target.value } })}
+                    placeholder="https://www.expedia.com/..."
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition-all ${
+                      otaErrors.expedia
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    required
+                  />
+                  {otaErrors.expedia && (
+                    <div className="flex items-center gap-1 text-sm text-red-600">
+                      <AlertCircle size={14} />
+                      <span>{otaErrors.expedia}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
