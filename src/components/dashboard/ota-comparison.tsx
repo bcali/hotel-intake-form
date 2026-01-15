@@ -1,10 +1,5 @@
 import { AlertTriangle, CheckCircle, Flame } from 'lucide-react';
-import type { DashboardFilters } from '../dashboard';
 import { SourceIcon } from './source-icon';
-
-interface OTAComparisonProps {
-  filters: DashboardFilters;
-}
 
 interface OTATheme {
   theme: string;
@@ -87,7 +82,7 @@ const riskOrder = {
   'consistent': 4,
 };
 
-export function OTAComparison({ filters: _filters }: OTAComparisonProps) {
+export function OTAComparison() {
   const sortedThemes = [...themes].sort((a, b) => {
     return riskOrder[a.risk] - riskOrder[b.risk];
   });

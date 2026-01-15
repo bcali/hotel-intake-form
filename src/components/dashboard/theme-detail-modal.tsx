@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { X, Quote } from 'lucide-react';
 import type { Theme } from './ranked-theme-list';
 import { SourceIcon } from './source-icon';
@@ -17,6 +18,17 @@ const sourceLabels: Record<string, string> = {
 };
 
 export function ThemeDetailModal({ theme, type, onClose }: ThemeDetailModalProps) {
+  // Calculate source mentions deterministically based on source name
+  const sourceMentions = useMemo(() => {
+    const baseMentions = Math.round(theme.mentions / theme.sources.length);
+    return theme.sources.reduce((acc, source, index) => {
+      // Use a deterministic variation based on source index instead of random
+      const variation = (index % 3) + 1;
+      acc[source] = baseMentions + variation;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [theme.mentions, theme.sources]);
+
   const actions = type === 'negative' 
     ? [
         'Schedule immediate AC inspection and maintenance for all units',
@@ -68,7 +80,7 @@ export function ThemeDetailModal({ theme, type, onClose }: ThemeDetailModalProps
                     <span className="text-gray-700 font-semibold">{sourceLabels[source]}</span>
                   </div>
                   <span className="text-gray-900 font-medium">
-                    {Math.round((theme.mentions / theme.sources.length) + Math.random() * 5)} mentions
+                    {sourceMentions[source]} mentions
                   </span>
                 </div>
               ))}

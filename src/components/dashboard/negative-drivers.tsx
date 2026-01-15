@@ -8,7 +8,7 @@ interface NegativeDriversProps {
   formData: FormData;
 }
 
-export function NegativeDrivers({ filters: _filters, formData }: NegativeDriversProps) {
+export function NegativeDrivers({ formData }: NegativeDriversProps) {
   const mainKeyword = formData.keywords[0] || formData.brand || 'Property';
   
   const negativeThemes = [

@@ -9,7 +9,7 @@ interface PositiveDriversProps {
   formData: FormData;
 }
 
-export function PositiveDrivers({ filters: _filters, formData }: PositiveDriversProps) {
+export function PositiveDrivers({ formData }: PositiveDriversProps) {
   const mainKeyword = formData.keywords[0] || formData.brand || 'Property';
   
   const positiveThemes: Theme[] = [

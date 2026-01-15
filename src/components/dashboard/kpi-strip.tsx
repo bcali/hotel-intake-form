@@ -66,7 +66,7 @@ export function KPIStrip({ filters, formData }: KPIStripProps) {
   );
 }
 
-function KPICard({ label, value, delta: _delta, deltaLabel, isPositive, showComparison }: KPICardData & { showComparison: boolean }) {
+function KPICard({ label, value, deltaLabel, isPositive, showComparison }: Omit<KPICardData, 'delta'> & { showComparison: boolean }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
       <p className="text-sm text-gray-600 mb-1 font-medium">{label}</p>
