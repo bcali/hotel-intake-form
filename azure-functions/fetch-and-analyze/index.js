@@ -23,17 +23,19 @@
  */
 
 const { ApifyClient } = require('apify-client');
-const { OpenAIClient, AzureKeyCredential } = require('@azure/openai');
+const { OpenAIClient } = require('@azure/openai');
+const { DefaultAzureCredential } = require('@azure/identity');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 // Environment variables
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN;
 const AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
-const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
 const AZURE_OPENAI_DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT;
 const TENANT_ID = process.env.TENANT_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
+
+// Note: AZURE_OPENAI_KEY not needed - using Managed Identity instead
 
 // Apify actor IDs
 const ACTORS = {
@@ -299,10 +301,9 @@ async function fetchBookingReviews(client, url, context) {
  */
 async function analyzeReviews(hotelName, reviews, context) {
   try {
-    const client = new OpenAIClient(
-      AZURE_OPENAI_ENDPOINT,
-      new AzureKeyCredential(AZURE_OPENAI_KEY)
-    );
+    // Use Managed Identity for authentication (no API key needed)
+    const credential = new DefaultAzureCredential();
+    const client = new OpenAIClient(AZURE_OPENAI_ENDPOINT, credential);
 
     // Build review text for analysis
     const reviewText = buildReviewText(reviews);

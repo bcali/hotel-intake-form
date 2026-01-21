@@ -7,6 +7,7 @@
     "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
+    "@azure/identity": "^4.0.0",
     "@azure/openai": "^1.0.0-beta.12",
     "apify-client": "^2.8.2",
     "jsonwebtoken": "^9.0.2",

@@ -114,6 +114,43 @@
   - **Remove:** `*` (if present - too permissive)
   - Click "Save"
 
+### Step 2A: Enable Managed Identity (Recommended - No API Keys!)
+
+**What:** Azure's built-in authentication for OpenAI - eliminates API key management
+
+- [ ] **Enable System-Assigned Managed Identity**
+  - Navigate to: Function App → Settings → Identity
+  - Click: System assigned tab
+  - Toggle Status to **On**
+  - Click **Save**
+  - Click **Yes** to confirm
+  - **Copy the Object (principal) ID** (you'll need this next)
+
+- [ ] **Grant Function Access to Azure OpenAI**
+  - Navigate to: Azure OpenAI resource
+  - Click: Access control (IAM)
+  - Click: + Add → Add role assignment
+  - **Role tab:**
+    - Search: Cognitive Services OpenAI User
+    - Select it → Click Next
+  - **Members tab:**
+    - Assign access to: Managed Identity
+    - Click: + Select members
+    - Filter: Function App
+    - Select: hotel-vog-functions
+    - Click Select → Click Next
+  - **Review + assign tab:**
+    - Click: Review + assign
+  - Wait 30 seconds for permissions to propagate
+
+**Why this is better:**
+- ✅ No API key to manage or rotate
+- ✅ No secrets in environment variables
+- ✅ Better security (Microsoft best practice)
+- ✅ Automatic credential rotation by Azure
+
+**Detailed guide:** [MANAGED-IDENTITY-GUIDE.md](./MANAGED-IDENTITY-GUIDE.md)
+
 ### Step 3: Configure Environment Variables
 
 - [ ] **Navigate to Configuration**
@@ -130,13 +167,11 @@
   - **Value:** `https://[resource].openai.azure.com/`
   - Click "OK"
 
-  - **Name:** `AZURE_OPENAI_KEY`
-  - **Value:** `xxxxxxxxxxxxx`
-  - Click "OK"
-
   - **Name:** `AZURE_OPENAI_DEPLOYMENT`
   - **Value:** `gpt-4o` (or your Copilot deployment name)
   - Click "OK"
+
+**Note:** No `AZURE_OPENAI_KEY` needed - Managed Identity handles authentication!
 
 - [ ] **Add Auth Settings**
   - **Name:** `TENANT_ID`

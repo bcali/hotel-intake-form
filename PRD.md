@@ -376,13 +376,17 @@ This product is a **proxy interface** for the hidden analysis prompt.
 
 ### 7. Security & Compliance
 
-**API Key Protection:**
-- ✅ Apify API token stored in Azure Function environment variables
-- ✅ Azure OpenAI key stored in Azure Function environment variables
+**Managed Identity (Best Practice):**
+- ✅ **Azure OpenAI:** Uses Managed Identity (no API keys!)
+  - Function App authenticates automatically via Azure
+  - No secrets to manage or rotate
+  - Microsoft recommended approach
+  - Automatic audit trail
+- ✅ **Apify:** API token stored in Azure Function environment variables
 - ✅ Never exposed in browser code or HTML
 - ✅ Only Azure Function can access
 
-**Authentication:**
+**User Authentication:**
 - ✅ Bearer token validation on every API request
 - ✅ Token signature verified against Azure AD public keys
 - ✅ User identity logged for audit trail

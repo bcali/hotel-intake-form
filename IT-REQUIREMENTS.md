@@ -69,16 +69,18 @@ Browser displays dashboard with analysis
 - **Hosting Plan:** Consumption (pay-per-use)
 - **Region:** Same as tenant (e.g., East US)
 - **CORS:** `https://[tenant].sharepoint.com` (enable OneDrive access)
+- **Managed Identity:** System-assigned (enable after creation - see below)
 
 **Environment Variables (Application Settings):**
 ```
 APIFY_API_TOKEN=apify_api_xxxxxxxxxxxxx
 AZURE_OPENAI_ENDPOINT=https://[resource].openai.azure.com/
-AZURE_OPENAI_KEY=xxxxxxxxxxxxx
 AZURE_OPENAI_DEPLOYMENT=gpt-4o (or Copilot deployment name)
 TENANT_ID=[your-tenant-id]
 CLIENT_ID=[app-registration-client-id]
 ```
+
+**Note:** No AZURE_OPENAI_KEY needed - we use **Managed Identity** instead (more secure, no API keys to manage)
 
 **Functions to Deploy:**
 
@@ -97,6 +99,39 @@ CLIENT_ID=[app-registration-client-id]
 
 ---
 
+### 3. Managed Identity Setup (Recommended - More Secure Than API Keys)
+
+**What:** Azure's built-in authentication that eliminates API keys for Azure OpenAI
+
+**Why:**
+- ✅ No API keys to manage or rotate
+- ✅ Better security (no secrets can leak)
+- ✅ Microsoft best practice
+- ✅ Same setup time (actually faster!)
+- ✅ Easier compliance
+
+**Setup Steps (5 minutes):**
+
+1. **Enable Managed Identity on Function App:**
+   - Go to: Function App → Settings → Identity
+   - Toggle "System assigned" to **On**
+   - Click Save
+   - Copy the Object (principal) ID
+
+2. **Grant Function Access to Azure OpenAI:**
+   - Go to: Azure OpenAI resource → Access control (IAM)
+   - Click: + Add → Add role assignment
+   - Role: **Cognitive Services OpenAI User**
+   - Assign access to: **Managed Identity**
+   - Select: hotel-vog-functions
+   - Click: Review + assign
+
+3. **Done!** No API key needed in environment variables
+
+**Detailed Guide:** See [MANAGED-IDENTITY-GUIDE.md](./MANAGED-IDENTITY-GUIDE.md)
+
+---
+
 ## Security Requirements
 
 ### Authentication Flow
@@ -107,11 +142,22 @@ CLIENT_ID=[app-registration-client-id]
 5. Browser includes token in `Authorization: Bearer` header when calling Azure Function
 6. Azure Function validates token before processing
 
-### API Key Protection
-- ✅ Apify API key stored in Azure Function environment variables (never in browser)
-- ✅ Copilot API key stored in Azure Function environment variables (never in browser)
+### API Key Protection & Managed Identity
+- ✅ **Azure OpenAI:** Uses Managed Identity (no API key needed)
+  - Function App has system-assigned identity
+  - Identity granted "Cognitive Services OpenAI User" role
+  - Azure handles authentication automatically
+  - No secrets to rotate or manage
+- ✅ **Apify API:** Token stored in Azure Function environment variables (never in browser)
 - ✅ Only authenticated users can call Azure Function
 - ✅ No public API endpoints
+
+**Why Managed Identity?**
+- Industry best practice (Microsoft recommended)
+- No API keys to manage or rotate
+- Better security (no keys can leak)
+- Easier compliance (automatic audit trail)
+- Same setup time as API keys (actually faster!)
 
 ### Data Storage
 - **OneDrive:** HTML files only (no sensitive data)
