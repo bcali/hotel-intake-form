@@ -1,0 +1,15 @@
+{
+  "name": "hotel-review-scraper",
+  "version": "1.0.0",
+  "description": "Apify integration for automated review fetching",
+  "main": "fetch-reviews-apify.js",
+  "scripts": {
+    "fetch": "node fetch-reviews-apify.js"
+  },
+  "keywords": ["apify", "reviews", "scraper", "hotel"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "apify-client": "^2.8.2"
+  }
+}
