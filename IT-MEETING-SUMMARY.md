@@ -28,6 +28,7 @@ Create an App Registration for authentication:
 **Output needed:**
 - Client ID (safe to expose in browser)
 - Tenant ID (safe to expose in browser)
+- Client secret
 
 ### 2. Azure Function App 
 Deploy serverless backend:
