@@ -39,20 +39,30 @@ Deploy serverless backend:
 - **Environment Variables:**
   - `APIFY_API_TOKEN` (for review scraping)
   - `AZURE_OPENAI_ENDPOINT` (for AI analysis)
-  - `AZURE_OPENAI_KEY` (for AI analysis)
   - `AZURE_OPENAI_DEPLOYMENT` (model name, e.g., `gpt-4o`)
   - `TENANT_ID` (from App Registration)
   - `CLIENT_ID` (from App Registration)
 
-### 3. Azure OpenAI or Copilot Access
+**Note:** No AZURE_OPENAI_KEY needed - we use **Managed Identity** (more secure!)
+
+### 3. Azure OpenAI Access with Managed Identity (Best Practice)
 We need programmatic API access for AI analysis:
 
-- **Option A:** Azure OpenAI deployment (gpt-4o model)
-- **Option B:** Microsoft Copilot API endpoint
+- **Option A (Recommended):** Azure OpenAI with Managed Identity
+  - Enable System-Assigned Managed Identity on Function App
+  - Grant "Cognitive Services OpenAI User" role to Function
+  - **No API key needed** - Azure handles authentication automatically
+  - **Benefits:** No secrets to manage, automatic rotation, better security
+
+- **Option B (Legacy):** Azure OpenAI with API Key
+  - Requires manual key rotation every 90 days
+  - Key stored in environment variables
+  - Less secure than Managed Identity
 
 **What we need:**
-- API endpoint URL
-- API key
+- API endpoint URL (e.g., `https://[resource].openai.azure.com/`)
+- Deployment name (e.g., `gpt-4o`)
+- **No API key if using Managed Identity** ✅
 
 ---
 
@@ -79,8 +89,9 @@ Browser displays dashboard (sentiment, themes, action items)
 ```
 
 **Key Security:**
-- API keys never exposed in browser (only in Azure Function)
-- Only authenticated users can call Azure Function
+- **Managed Identity:** No API keys for Azure OpenAI (Microsoft best practice)
+- Apify API key stored server-side only (never exposed in browser)
+- Only authenticated users can call Azure Function (token validation)
 - No persistent storage (stateless processing)
 
 ---
@@ -121,20 +132,26 @@ Browser displays dashboard (sentiment, themes, action items)
 
 ## Questions for IT
 
-1. **Azure OpenAI:** Do we have an existing Azure OpenAI deployment we can use, or should we use Copilot API?
+1. **Azure OpenAI:** Do we have an existing Azure OpenAI deployment we can use?
+   - **Preferred:** Deploy with Managed Identity (no API key management)
+   - **Fallback:** API key approach if Managed Identity not approved
 
-2. **CORS Policy:** Can you whitelist `*.sharepoint.com` for Azure Function CORS?
+2. **Managed Identity Setup:** Can you enable System-Assigned Managed Identity on the Function App?
+   - Grant "Cognitive Services OpenAI User" role to Function
+   - Setup time: ~2 minutes (see [MANAGED-IDENTITY-GUIDE.md](./MANAGED-IDENTITY-GUIDE.md))
 
-3. **Monitoring:** What logging/monitoring do you recommend? (Suggested: Application Insights)
+3. **CORS Policy:** Can you whitelist `*.sharepoint.com` for Azure Function CORS?
 
-4. **Rate Limiting:** Should we implement per-user rate limits? (Suggested: 10 requests/hour)
+4. **Monitoring:** What logging/monitoring do you recommend? (Suggested: Application Insights)
 
-5. **Deployment Method:** Do you prefer:
+5. **Rate Limiting:** Should we implement per-user rate limits? (Suggested: 10 requests/hour)
+
+6. **Deployment Method:** Do you prefer:
    - Azure CLI deployment (we provide command)
    - VS Code deployment (we provide folder)
    - Azure DevOps pipeline (future consideration)
 
-6. **Apify Account:** Who should own the Apify account?
+7. **Apify Account:** Who should own the Apify account?
    - Option A: IT team creates + manages
    - Option B: Marketing team creates, IT stores API key
 
@@ -146,9 +163,10 @@ All documentation is ready in the GitHub repo:
 
 1. **[IT-REQUIREMENTS.md](./IT-REQUIREMENTS.md)** - Detailed requirements
 2. **[IT-DEPLOYMENT-CHECKLIST.md](./IT-DEPLOYMENT-CHECKLIST.md)** - Step-by-step deployment guide
-3. **[ARCHITECTURE-ONEDRIVE.md](./ARCHITECTURE-ONEDRIVE.md)** - Architecture diagrams
-4. **[azure-functions/](./azure-functions/)** - Backend code ready to deploy
-5. **[BUILD-STATIC-HTML.md](./BUILD-STATIC-HTML.md)** - Frontend build guide
+3. **[MANAGED-IDENTITY-GUIDE.md](./MANAGED-IDENTITY-GUIDE.md)** - Managed Identity setup guide (30 min)
+4. **[ARCHITECTURE-ONEDRIVE.md](./ARCHITECTURE-ONEDRIVE.md)** - Architecture diagrams
+5. **[azure-functions/](./azure-functions/)** - Backend code ready to deploy
+6. **[BUILD-STATIC-HTML.md](./BUILD-STATIC-HTML.md)** - Frontend build guide
 
 ---
 
@@ -156,9 +174,9 @@ All documentation is ready in the GitHub repo:
 
 **If approved today:**
 1. IT provides Client ID + Tenant ID (email to dev team)
-2. IT provisions Azure OpenAI or Copilot API credentials
-3. Dev team begins MSAL.js integration (2-3 days)
-4. IT deploys Azure Function when code ready (1 hour)
+2. IT provisions Azure OpenAI endpoint with Managed Identity setup
+3. Dev team builds static HTML with MSAL.js (2-3 days)
+4. IT deploys Azure Function with Managed Identity enabled (1 hour)
 5. End-to-end testing (1 day)
 6. Pilot deployment (Week 2)
 
@@ -191,7 +209,7 @@ All documentation is ready in the GitHub repo:
 | Azure Function timeout | Set 5-minute timeout, implement retry logic |
 | Apify API downtime | Graceful error handling, manual fallback |
 | API cost overrun | Set Apify spending alert at $100/month |
-| Security concern | All API keys server-side only, token validation on every request |
+| Security concern | Managed Identity (no keys), token validation on every request |
 
 ---
 
@@ -208,10 +226,10 @@ All documentation is ready in the GitHub repo:
 After this meeting:
 - [ ] IT confirms feasibility and timeline
 - [ ] IT creates App Registration (Client ID + Tenant ID to dev)
-- [ ] IT provides Azure OpenAI/Copilot credentials
+- [ ] IT provisions Azure OpenAI endpoint with Managed Identity
 - [ ] Dev integrates MSAL.js and builds static HTML
 - [ ] Dev provides Azure Function code to IT
-- [ ] IT deploys Azure Function
+- [ ] IT deploys Azure Function with Managed Identity enabled
 - [ ] Joint testing
 - [ ] Pilot launch
 
