@@ -19,7 +19,8 @@ export const LoginScreen = () => {
     setError(null);
 
     try {
-      await instance.loginPopup(loginRequest);
+      // Use redirect instead of popup for better reliability
+      await instance.loginRedirect(loginRequest);
     } catch (err) {
       console.error('Login failed:', err);
       setError(
@@ -27,7 +28,6 @@ export const LoginScreen = () => {
           ? err.message
           : 'Login failed. Please try again.'
       );
-    } finally {
       setIsLoading(false);
     }
   };

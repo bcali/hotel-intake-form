@@ -11,7 +11,7 @@ We're building a proof-of-concept tool for hotel GMs to analyze guest reviews us
 - **Frontend:** Static HTML hosted on OneDrive (no install needed)
 - **Backend:** Azure Functions calling Apify (review scraping) + Copilot (AI analysis)
 - **Auth:** Azure AD via App Registration
-- **Timeline:** 2-3 weeks to pilot with 1 hotel
+- **Timeline:** 1-2 weeks to pilot with 1 hotel
 
 ---
 
@@ -54,10 +54,7 @@ We need programmatic API access for AI analysis:
   - **No API key needed** - Azure handles authentication automatically
   - **Benefits:** No secrets to manage, automatic rotation, better security
 
-- **Option B (Legacy):** Azure OpenAI with API Key
-  - Requires manual key rotation every 90 days
-  - Key stored in environment variables
-  - Less secure than Managed Identity
+
 
 **What we need:**
 - API endpoint URL (e.g., `https://[resource].openai.azure.com/`)

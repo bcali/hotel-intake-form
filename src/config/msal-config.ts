@@ -5,7 +5,7 @@
  * or can be set as environment variables during development
  */
 
-import { Configuration, PopupRequest } from '@azure/msal-browser';
+import type { Configuration, PopupRequest } from '@azure/msal-browser';
 
 // Extend Window interface for TypeScript
 declare global {
@@ -34,6 +34,14 @@ const getConfig = () => {
 
 const config = getConfig();
 
+// Debug: Log configuration (remove in production)
+console.log('MSAL Config:', {
+  clientId: config.clientId,
+  tenantId: config.tenantId,
+  functionUrl: config.functionUrl,
+  isConfigured: config.clientId !== 'REPLACE_WITH_CLIENT_ID'
+});
+
 /**
  * MSAL Configuration
  */
@@ -45,11 +53,7 @@ export const msalConfig: Configuration = {
     postLogoutRedirectUri: typeof window !== 'undefined' ? window.location.origin : '',
   },
   cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false,
-  },
-  system: {
-    allowNativeBroker: false,
+    cacheLocation: 'localStorage'
   }
 };
 
