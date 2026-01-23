@@ -17,7 +17,7 @@ We're building a proof-of-concept tool for hotel GMs to analyze guest reviews us
 
 ## What We Need from IT
 
-### 1. Azure App Registration (30 minutes)
+### 1. Azure App Registration 
 Create an App Registration for authentication:
 
 - **Name:** `hotel-vog-poc`
@@ -28,8 +28,9 @@ Create an App Registration for authentication:
 **Output needed:**
 - Client ID (safe to expose in browser)
 - Tenant ID (safe to expose in browser)
+- Client secret
 
-### 2. Azure Function App (1 hour)
+### 2. Azure Function App 
 Deploy serverless backend:
 
 - **Name:** `hotel-vog-functions`
@@ -48,13 +49,11 @@ Deploy serverless backend:
 ### 3. Azure OpenAI Access with Managed Identity (Best Practice)
 We need programmatic API access for AI analysis:
 
-- **Option A (Recommended):** Azure OpenAI with Managed Identity
+-  Azure OpenAI with Managed Identity
   - Enable System-Assigned Managed Identity on Function App
   - Grant "Cognitive Services OpenAI User" role to Function
   - **No API key needed** - Azure handles authentication automatically
   - **Benefits:** No secrets to manage, automatic rotation, better security
-
-
 
 **What we need:**
 - API endpoint URL (e.g., `https://[resource].openai.azure.com/`)
