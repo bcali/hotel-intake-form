@@ -1,54 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormData } from '../App';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock, 
-  Download, 
-  Share2, 
-  Filter,
+import { runFullAnalysis, type AnalysisResult, type ScrapeResult } from '../services/review-analysis';
+import {
+  BarChart3,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Download,
   RefreshCcw,
   LayoutDashboard,
   MessageSquare,
-  Users,
   Building2,
   ExternalLink,
   Star,
-  Globe
+  Globe,
+  Loader2
 } from 'lucide-react';
-
-export interface DashboardFilters {
-  startDate: string;
-  endDate: string;
-  compareEnabled: boolean;
-  comparePeriod: string;
-  source: string;
-  severity: string;
-  owner: string;
-}
 
 interface DashboardProps {
   formData: FormData;
 }
 
-export function Dashboard({ formData }: DashboardProps) {
-  const [filters, setFilters] = useState<DashboardFilters>({
-    startDate: formData.startDate || new Date().toISOString().split('T')[0],
-    endDate: formData.endDate || new Date().toISOString().split('T')[0],
-    compareEnabled: true,
-    comparePeriod: 'previous-period',
-    source: 'all',
-    severity: 'all',
-    owner: 'all',
-  });
+type AnalysisStatus = 'idle' | 'scraping' | 'analyzing' | 'complete' | 'error';
 
+export function Dashboard({ formData }: DashboardProps) {
+  const [status, setStatus] = useState<AnalysisStatus>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [scrapeResult, setScrapeResult] = useState<ScrapeResult | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const updateFilters = (newFilters: Partial<DashboardFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+  const runAnalysis = async () => {
+    setStatus('scraping');
+    setError(null);
+    setStatusMessage('Starting analysis...');
+
+    try {
+      const result = await runFullAnalysis(formData, (step, message) => {
+        setStatus(step as AnalysisStatus);
+        setStatusMessage(message);
+      });
+
+      if (result.success) {
+        setScrapeResult(result.scrapeResult);
+        setAnalysis(result.analysis);
+        setStatus('complete');
+      } else {
+        setError(result.error || 'Analysis failed');
+        setStatus('error');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setStatus('error');
+    }
   };
+
+  useEffect(() => {
+    runAnalysis();
+  }, []);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '...';
@@ -59,6 +70,49 @@ export function Dashboard({ formData }: DashboardProps) {
     });
   };
 
+  // Loading state
+  if (status === 'scraping' || status === 'analyzing' || status === 'idle') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-6" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            {status === 'scraping' ? 'Collecting Reviews' : 'Analyzing with AI'}
+          </h2>
+          <p className="text-gray-600 mb-4">{statusMessage}</p>
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+            <div className={`w-3 h-3 rounded-full ${status === 'scraping' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+            <span>Scrape Reviews</span>
+            <div className="w-8 h-px bg-gray-300" />
+            <div className={`w-3 h-3 rounded-full ${status === 'analyzing' ? 'bg-blue-500 animate-pulse' : status === 'complete' ? 'bg-green-500' : 'bg-gray-300'}`} />
+            <span>AI Analysis</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (status === 'error') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-6" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Analysis Failed</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={runAnalysis}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
+          >
+            <RefreshCcw size={18} />
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Success - show dashboard with real data
   return (
     <div className="min-h-screen bg-gray-50 flex text-left">
       {/* Sidebar */}
@@ -70,7 +124,7 @@ export function Dashboard({ formData }: DashboardProps) {
             </div>
             <span className="font-bold text-xl tracking-tight">HotelVoice</span>
           </div>
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Internal Analysis Tool</p>
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">POC Analysis Tool</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -79,7 +133,6 @@ export function Dashboard({ formData }: DashboardProps) {
             { id: 'drivers', icon: TrendingUp, label: 'Drivers & Themes' },
             { id: 'actions', icon: CheckCircle2, label: 'Action Plan' },
             { id: 'platforms', icon: Globe, label: 'OTA Comparison' },
-            { id: 'social', icon: Share2, label: 'Social Context' },
           ].map((item) => (
             <button
               key={item.id}
@@ -96,15 +149,30 @@ export function Dashboard({ formData }: DashboardProps) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
-          <div className="bg-blue-600 rounded-xl p-4 text-white">
-            <p className="text-xs font-medium opacity-80 mb-1">Need help?</p>
-            <p className="text-sm font-bold mb-3">View Documentation</p>
-            <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-colors">
-              Open Guide
-            </button>
+        {/* Scrape Stats */}
+        {scrapeResult && (
+          <div className="p-4 border-t border-gray-100">
+            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Reviews Collected</p>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Google Maps</span>
+                <span className="font-bold">{scrapeResult.breakdown.googleMaps}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">TripAdvisor</span>
+                <span className="font-bold">{scrapeResult.breakdown.tripAdvisor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Booking.com</span>
+                <span className="font-bold">{scrapeResult.breakdown.booking}</span>
+              </div>
+              <div className="flex justify-between border-t pt-1 mt-1">
+                <span className="text-gray-900 font-bold">Total</span>
+                <span className="font-bold text-blue-600">{scrapeResult.totalReviews}</span>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* Main Content */}
@@ -114,7 +182,7 @@ export function Dashboard({ formData }: DashboardProps) {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-none mb-1">
-                {formData.hotelName || 'Grand Resort & Spa'}
+                {formData.hotelName || 'Hotel Analysis'}
               </h1>
               <p className="text-xs text-gray-500 font-medium">
                 {formData.brand} · {formData.city}, {formData.country}
@@ -123,7 +191,7 @@ export function Dashboard({ formData }: DashboardProps) {
             <div className="h-4 w-px bg-gray-200" />
             <div className="flex items-center gap-2 px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-bold">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              Report Ready
+              Analysis Complete
             </div>
           </div>
 
@@ -131,37 +199,25 @@ export function Dashboard({ formData }: DashboardProps) {
             <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200 transition-colors">
               <Download size={16} /> Export PDF
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm">
+            <button
+              onClick={runAnalysis}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
+            >
               <RefreshCcw size={16} /> Re-run Analysis
             </button>
           </div>
         </header>
 
         {/* Filters Bar */}
-        <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Source</span>
-              <select 
-                className="text-sm font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
-                value={filters.source}
-                onChange={(e) => updateFilters({ source: e.target.value })}
-              >
-                <option value="all">All Sources</option>
-                <option value="google">Google Maps</option>
-                <option value="tripadvisor">TripAdvisor</option>
-                <option value="booking">Booking.com</option>
-                <option value="agoda">Agoda</option>
-              </select>
-            </div>
-          </div>
-
+        <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-400" />
             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Period:</span>
             <span className="text-sm font-bold text-gray-900">
               {formatDate(formData.startDate)} - {formatDate(formData.endDate)}
             </span>
+          </div>
+          <div className="text-xs text-gray-500">
+            Powered by Claude AI
           </div>
         </div>
 
@@ -169,25 +225,42 @@ export function Dashboard({ formData }: DashboardProps) {
         <div className="p-8 space-y-8 max-w-7xl mx-auto w-full">
           {/* KPI Strip */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: 'Overall Sentiment', value: '84%', trend: '+4.2%', color: 'blue', icon: BarChart3 },
-              { label: 'Review Volume', value: '1,248', trend: '+12%', color: 'green', icon: MessageSquare },
-              { label: 'Avg. Rating', value: '4.6', trend: '+0.1', color: 'yellow', icon: Star },
-              { label: 'Response Rate', value: '92%', trend: '-2.5%', color: 'purple', icon: Users },
-            ].map((kpi, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-2 bg-${kpi.color}-50 text-${kpi.color}-600 rounded-lg`}>
-                    <kpi.icon size={20} />
-                  </div>
-                  <span className={`text-xs font-bold ${kpi.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'} bg-gray-50 px-2 py-1 rounded-md`}>
-                    {kpi.trend}
-                  </span>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <BarChart3 size={20} />
                 </div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">{kpi.label}</h3>
-                <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
               </div>
-            ))}
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Overall Sentiment</h3>
+              <p className="text-2xl font-bold text-gray-900">{analysis?.overallSentiment || 0}%</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <MessageSquare size={20} />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Reviews Analyzed</h3>
+              <p className="text-2xl font-bold text-gray-900">{analysis?.reviewCount || 0}</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
+                  <Star size={20} />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Avg. Rating</h3>
+              <p className="text-2xl font-bold text-gray-900">{analysis?.averageRating?.toFixed(1) || 'N/A'}</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                  <CheckCircle2 size={20} />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Action Items</h3>
+              <p className="text-2xl font-bold text-gray-900">{analysis?.actionItems?.length || 0}</p>
+            </div>
           </div>
 
           {/* Drivers Section */}
@@ -197,11 +270,7 @@ export function Dashboard({ formData }: DashboardProps) {
                 <TrendingUp size={20} className="text-green-600" /> Top Positive Drivers
               </h3>
               <div className="space-y-6">
-                {[
-                  { theme: 'Staff Friendliness', score: 94, impact: 'High' },
-                  { theme: 'Breakfast Variety', score: 88, impact: 'Medium' },
-                  { theme: 'Ocean View Rooms', score: 91, impact: 'High' },
-                ].map((item, i) => (
+                {(analysis?.positiveDrivers || []).slice(0, 5).map((item, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-gray-700">{item.theme}</span>
@@ -210,8 +279,14 @@ export function Dashboard({ formData }: DashboardProps) {
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div className="h-full bg-green-500 rounded-full" style={{ width: `${item.score}%` }} />
                     </div>
+                    {item.examples?.[0] && (
+                      <p className="text-xs text-gray-500 italic">"{item.examples[0]}"</p>
+                    )}
                   </div>
                 ))}
+                {(!analysis?.positiveDrivers || analysis.positiveDrivers.length === 0) && (
+                  <p className="text-gray-500 text-sm">No positive drivers identified</p>
+                )}
               </div>
             </div>
 
@@ -220,11 +295,7 @@ export function Dashboard({ formData }: DashboardProps) {
                 <AlertCircle size={20} className="text-red-600" /> Top Negative Drivers
               </h3>
               <div className="space-y-6">
-                {[
-                  { theme: 'AC Noise Levels', score: 62, impact: 'High' },
-                  { theme: 'Elevator Wait Time', score: 45, impact: 'Medium' },
-                  { theme: 'Pool Towel Availability', score: 38, impact: 'Low' },
-                ].map((item, i) => (
+                {(analysis?.negativeDrivers || []).slice(0, 5).map((item, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-gray-700">{item.theme}</span>
@@ -233,8 +304,14 @@ export function Dashboard({ formData }: DashboardProps) {
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div className="h-full bg-red-500 rounded-full" style={{ width: `${item.score}%` }} />
                     </div>
+                    {item.examples?.[0] && (
+                      <p className="text-xs text-gray-500 italic">"{item.examples[0]}"</p>
+                    )}
                   </div>
                 ))}
+                {(!analysis?.negativeDrivers || analysis.negativeDrivers.length === 0) && (
+                  <p className="text-gray-500 text-sm">No negative drivers identified</p>
+                )}
               </div>
             </div>
           </div>
@@ -243,21 +320,15 @@ export function Dashboard({ formData }: DashboardProps) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-8 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Top 5 Action Items</h3>
-                <p className="text-sm text-gray-500">Prioritized by impact on ranking and bookings</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Action Items</h3>
+                <p className="text-sm text-gray-500">Prioritized by impact on guest satisfaction</p>
               </div>
               <div className="flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                <Clock size={14} /> Next 14 Days
+                <Clock size={14} /> AI Recommended
               </div>
             </div>
             <div className="divide-y divide-gray-100">
-              {[
-                { task: 'Replace AC Filters in 4th Floor Wing', owner: 'Engineering', priority: 'Critical' },
-                { task: 'Implement Secondary Towel Station at Pool', owner: 'Housekeeping', priority: 'High' },
-                { task: 'Staff Training: Personalizing Check-ins', owner: 'Front Office', priority: 'Medium' },
-                { task: 'Refresh Vegan Breakfast Menu Options', owner: 'F&B', priority: 'Medium' },
-                { task: 'Audit Elevator Response Optimization', owner: 'Engineering', priority: 'High' },
-              ].map((item, i) => (
+              {(analysis?.actionItems || []).map((item, i) => (
                 <div key={i} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-bold text-gray-400">
@@ -271,12 +342,15 @@ export function Dashboard({ formData }: DashboardProps) {
                         </span>
                         <div className="w-1 h-1 rounded-full bg-gray-300" />
                         <span className={`text-xs font-bold uppercase ${
-                          item.priority === 'Critical' ? 'text-red-600' : 
+                          item.priority === 'Critical' ? 'text-red-600' :
                           item.priority === 'High' ? 'text-orange-600' : 'text-blue-600'
                         }`}>
                           {item.priority}
                         </span>
                       </div>
+                      {item.rationale && (
+                        <p className="text-xs text-gray-500 mt-1">{item.rationale}</p>
+                      )}
                     </div>
                   </div>
                   <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
@@ -284,8 +358,41 @@ export function Dashboard({ formData }: DashboardProps) {
                   </button>
                 </div>
               ))}
+              {(!analysis?.actionItems || analysis.actionItems.length === 0) && (
+                <div className="p-6 text-gray-500 text-center">No action items generated</div>
+              )}
             </div>
           </div>
+
+          {/* OTA Comparison */}
+          {analysis?.otaComparison && analysis.otaComparison.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Globe size={20} className="text-blue-600" /> Platform Comparison
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {analysis.otaComparison.map((platform, i) => (
+                  <div key={i} className="p-4 bg-gray-50 rounded-xl">
+                    <p className="font-bold text-gray-900 mb-2">{platform.source}</p>
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500">Rating</p>
+                        <p className="text-lg font-bold">{platform.rating?.toFixed(1) || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Sentiment</p>
+                        <p className="text-lg font-bold">{platform.sentiment}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Reviews</p>
+                        <p className="text-lg font-bold">{platform.reviewCount}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

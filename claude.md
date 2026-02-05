@@ -8,176 +8,193 @@ This file tracks the context, decisions, and progress for this project across Cl
 
 A web application that:
 - Collects hotel reviews from multiple sources (Google Maps, TripAdvisor, OTAs)
-- Uses Azure OpenAI to analyze sentiment and identify themes
+- Uses Claude AI to analyze sentiment and identify themes
 - Generates actionable insights for hotel management
-- Integrates with Azure AD for authentication
+- Supports both independent POC deployment and corporate (Minor) deployment
 
-## Current Status (2026-01-23)
+## Current Status (2026-02-03)
 
-### ✅ Completed
+### 🚀 NEW: Independent POC Stack
 
-1. **Azure AD Authentication Setup**
-   - Environment variables configured in `.env.local` (git-ignored)
-   - MSAL authentication integrated
-   - Login/logout flow implemented with redirect (not popup)
-   - Dev credentials received from IT
+**Pivoted away from Minor IT dependencies to prove out the concept independently.**
 
-2. **Security Configuration**
-   - Credentials stored in `.env.local` (never committed to git)
-   - `.env.example` created as template
-   - `.gitignore` updated to exclude all `.env*` files
+| Component | Technology | Status |
+|-----------|------------|--------|
+| Hosting | Firebase Hosting | Ready |
+| Auth | Supabase Auth | Ready |
+| Database | Supabase PostgreSQL | Ready |
+| AI Analysis | Claude API | Ready |
 
-3. **App Configuration**
-   - Switched from [App.tsx](src/App.tsx) to [App-with-MSAL.tsx](src/App-with-MSAL.tsx)
-   - Fixed TypeScript import errors (AccountInfo as type-only import)
-   - Changed from popup to redirect authentication for reliability
-   - Debug logging added to [msal-config.ts](src/config/msal-config.ts#L37-L43)
+### ✅ Completed - POC Refactor
 
-### 🔄 In Progress
+1. **Removed Azure/MSAL Dependencies**
+   - Removed `@azure/msal-browser` and `@azure/msal-react`
+   - Removed [msal-config.ts](src/config/msal-config.ts) (Azure config)
+   - Removed [App-with-MSAL.tsx](src/App-with-MSAL.tsx) (Azure version)
 
-**Waiting on IT: Admin Consent Required**
+2. **Added Supabase Integration**
+   - Created [supabase.ts](src/config/supabase.ts) - Supabase client config
+   - Created [auth-context.tsx](src/context/auth-context.tsx) - React auth context
+   - Updated [login-screen.tsx](src/components/login-screen.tsx) - Email/password + magic link
 
-The app is fully configured but needs IT to grant admin consent for the `User.Read` permission.
+3. **Added Claude AI Integration**
+   - Created [claude.ts](src/services/claude.ts) - Client-side service
+   - Created [analyze-reviews/index.ts](supabase/functions/analyze-reviews/index.ts) - Edge function
 
-**Details:**
-- App Registration: `ITC-28857 App Register for MS Graph`
-- Client ID: `6d05f734-4242-43d2-a9ae-7d9f1de0249c`
-- Tenant: `b3ba11e4-10a7-410f-bb6c-2e0c86433436` (minordev.com)
-- Error: "Need admin approval" when logging in
+4. **Updated App Structure**
+   - [App.tsx](src/App.tsx) now uses Supabase auth (not MSAL)
+   - [main.tsx](src/main.tsx) imports from App.tsx
+   - Removed Azure-specific environment variables
 
-**What IT needs to do:**
-1. Go to Azure Portal → App Registrations → ITC-28857 App Register for MS Graph
-2. Click "API Permissions"
-3. Click "Grant admin consent for Minor Hotel Group Limited"
+5. **Deployment Configuration**
+   - Created [firebase.json](firebase.json) - Firebase Hosting config
+   - Updated [vite.config.ts](vite.config.ts) - Standard Vite build
+   - Created [SETUP-POC.md](SETUP-POC.md) - Complete setup guide
 
-### 📋 Next Steps
+### 📁 Previous Azure Work (Preserved)
 
-Once admin consent is granted:
-1. Test full authentication flow
-2. Test wizard form (4 steps)
-3. Implement Azure Functions integration for review analysis
-4. Set up Managed Identity for Azure OpenAI access (see [MANAGED-IDENTITY-GUIDE.md](MANAGED-IDENTITY-GUIDE.md))
-5. Deploy to OneDrive for production POC
+The Azure/Minor-specific code is still in the repo if needed later:
+- `src/App-with-MSAL.tsx` - MSAL version of the app
+- `src/config/msal-config.ts` - Azure AD configuration
 
-## Development Environment
+## Quick Start (POC)
 
-### Credentials (Dev Environment)
+### 1. Set up Supabase
+```bash
+# Create project at supabase.com, then:
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
+```
 
-**App Registration:**
-- Application (client) ID: `6d05f734-4242-43d2-a9ae-7d9f1de0249c`
-- Directory (tenant) ID: `b3ba11e4-10a7-410f-bb6c-2e0c86433436`
-- Client Secret: Stored in `.env.local` (DO NOT COMMIT)
+### 2. Deploy Edge Function
+```bash
+npm install -g supabase
+supabase login
+supabase link --project-ref your-project-id
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-your-key
+supabase functions deploy analyze-reviews
+```
 
-**Test User:**
-- Email: `bclark@minordev.com`
-- Password: Stored in IT records
+### 3. Run Locally
+```bash
+npm install
+npm run dev
+# Open http://localhost:5173
+```
 
-### Environment Variables
+### 4. Deploy to Firebase
+```bash
+npm install -g firebase-tools
+firebase login
+npm run build
+firebase deploy
+```
+
+## Environment Variables
 
 Located in `.env.local` (git-ignored):
 ```bash
-VITE_AZURE_CLIENT_ID=6d05f734-4242-43d2-a9ae-7d9f1de0249c
-VITE_AZURE_TENANT_ID=b3ba11e4-10a7-410f-bb6c-2e0c86433436
-VITE_AZURE_CLIENT_SECRET=<stored-securely>
-VITE_DEV_USER_EMAIL=bclark@minordev.com
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### Running Locally
+**Note:** Claude API key is stored in Supabase secrets, NOT in frontend env vars.
 
-```bash
-npm run dev
-# Server runs on http://localhost:5173/hotel-intake-form/
-```
-
-**Important:** Restart dev server after changing `.env.local` for changes to take effect.
-
-## Key Technical Decisions
-
-### Authentication: Redirect vs Popup
-
-**Decision:** Use redirect-based authentication
-- **Why:** More reliable, no popup blockers, better mobile support
-- **Changed in:** [login-screen.tsx](src/components/login-screen.tsx#L23)
-- **Changed in:** [App-with-MSAL.tsx](src/App-with-MSAL.tsx#L257)
-
-### Environment Variable Strategy
-
-**Decision:** Use `.env.local` for dev, window injection for production
-- **Dev:** Vite reads from `.env.local`
-- **Production:** Build script injects into `window.AZURE_CONFIG`
-- **See:** [msal-config.ts](src/config/msal-config.ts#L23-L33)
-
-### Repository Structure
+## Repository Structure
 
 ```
 hotel-intake-form/
 ├── src/
-│   ├── App.tsx                    # Original app (no auth)
-│   ├── App-with-MSAL.tsx          # Current app (with Azure AD)
-│   ├── main.tsx                   # Entry point (uses App-with-MSAL)
+│   ├── App.tsx                    # Main app (Supabase auth)
+│   ├── App-with-MSAL.tsx          # Azure version (preserved)
+│   ├── main.tsx                   # Entry point
 │   ├── config/
-│   │   └── msal-config.ts         # MSAL configuration
+│   │   ├── supabase.ts            # Supabase client
+│   │   └── msal-config.ts         # Azure config (preserved)
+│   ├── context/
+│   │   └── auth-context.tsx       # Supabase auth context
+│   ├── services/
+│   │   └── claude.ts              # Claude API service
 │   └── components/
-│       ├── login-screen.tsx       # Login UI
+│       ├── login-screen.tsx       # Login UI (Supabase)
 │       ├── property-step.tsx      # Step 1: Hotel info
 │       ├── time-period-step.tsx   # Step 2: Date range
 │       ├── reviews-step.tsx       # Step 3: Review sources
 │       ├── social-step.tsx        # Step 4: Social/notes
 │       └── dashboard.tsx          # Results view
-├── .env.local                     # Dev credentials (git-ignored)
-├── .env.example                   # Template (committed)
-└── IT-MEETING-SUMMARY.md          # IT collaboration notes
+├── supabase/
+│   └── functions/
+│       └── analyze-reviews/       # Claude API edge function
+├── .env.local                     # Credentials (git-ignored)
+├── .env.example                   # Template
+├── firebase.json                  # Firebase Hosting config
+├── SETUP-POC.md                   # Detailed setup guide
+└── CLAUDE.md                      # This file
 ```
 
-## Known Issues
+## Migration Path
 
-### Admin Consent Required
-- **Status:** Blocking authentication
-- **Owner:** IT Team
-- **Resolution:** Waiting for IT to grant admin consent
+### POC → Minor/Azure
 
-### Environment Variables Not Loading
-- **Solution:** Restart dev server after changing `.env.local`
-- **Verification:** Check browser console for "MSAL Config" debug message
+When IT is ready and POC is proven:
 
-## Architecture Notes
+1. **Auth**: Swap Supabase Auth → MSAL (Azure AD)
+   - Re-enable `App-with-MSAL.tsx`
+   - Update `main.tsx` import
 
-### Current: Single Page App with Azure Functions Backend
+2. **AI**: Swap Claude API → Azure OpenAI
+   - Update edge function or create Azure Function
+   - Use Managed Identity for auth
 
-```
-Browser (React)
-    ↓ (Azure AD Auth)
-Azure Functions
-    ↓ (Managed Identity)
-Azure OpenAI
-```
+3. **Hosting**: Swap Firebase → Azure Static Web Apps
+   - Deploy via GitHub Actions or Azure CLI
 
-### Future: OneDrive Static HTML Deployment
+4. **Database**: Swap Supabase → Azure (if needed)
+   - Cosmos DB or Azure SQL
 
-See [BUILD-STATIC-HTML.md](BUILD-STATIC-HTML.md) and [MANAGED-IDENTITY-GUIDE.md](MANAGED-IDENTITY-GUIDE.md)
+**The React UI components stay the same - only infrastructure changes.**
 
-## IT Contacts & Resources
+## Previous Azure Work (Reference)
 
-- **IT Meeting Summary:** [IT-MEETING-SUMMARY.md](IT-MEETING-SUMMARY.md)
+### IT Ticket Status
 - **Ticket:** ITC-28857 App Register for MS Graph
-- **Status:** Waiting for admin consent
+- **Status:** Pending - redirect URIs + developer sandbox request
+- **App Registration:** `6d05f734-4242-43d2-a9ae-7d9f1de0249c`
 
-## Important Files
+### Why We Pivoted
+- IT approval process was blocking progress
+- OneDrive hosting doesn't work (blocks JavaScript)
+- POC needed to prove value before IT investment
 
-- `.env.local` - **NEVER COMMIT** - Contains secrets
-- `.env.example` - Template for other developers
-- `.gitignore` - Blocks `.env*` files from being committed
-- `msal-config.ts` - Handles both dev (env vars) and prod (window injection)
+## Key Decisions
+
+### Independent POC Approach
+**Decision:** Build POC outside Minor infrastructure first
+- **Why:** Faster iteration, no IT dependencies, prove value first
+- **Trade-off:** Will need migration work when moving to corporate stack
+- **Benefit:** Working demo to show stakeholders
+
+### Supabase for Auth
+**Decision:** Use Supabase Auth (not Auth0, Firebase Auth, etc.)
+- **Why:** Already have Supabase available, includes database, edge functions
+- **Benefit:** Single platform for auth + DB + serverless
+
+### Claude for Analysis
+**Decision:** Use Claude API (not OpenAI, Gemini)
+- **Why:** User preference, excellent for analysis tasks
+- **Cost:** ~$0.01-0.05 per review analysis
 
 ## Session Reminders for Claude
 
 When resuming work on this project:
-1. Check if admin consent has been granted (blocking issue)
-2. Environment variables are in `.env.local` (git-ignored)
-3. Dev server URL: http://localhost:5173/hotel-intake-form/
-4. Test credentials: `bclark@minordev.com`
-5. The app uses [App-with-MSAL.tsx](src/App-with-MSAL.tsx), not App.tsx
+1. **POC Stack:** Supabase + Claude + Firebase (not Azure)
+2. App uses [App.tsx](src/App.tsx) with Supabase auth
+3. Environment variables are in `.env.local` (Supabase keys)
+4. Claude API key is in Supabase secrets (not frontend)
+5. Edge function at `supabase/functions/analyze-reviews/`
+6. Setup guide: [SETUP-POC.md](SETUP-POC.md)
+7. Azure code preserved in `App-with-MSAL.tsx` for later migration
 
 ## Last Updated
 
-2026-01-23 - Initial setup and authentication configuration complete, waiting for IT admin consent
+2026-02-03 - Refactored to independent POC stack (Supabase + Claude + Firebase)
