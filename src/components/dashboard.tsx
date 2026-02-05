@@ -84,7 +84,7 @@ export function Dashboard({ formData }: DashboardProps) {
             <div className={`w-3 h-3 rounded-full ${status === 'scraping' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
             <span>Scrape Reviews</span>
             <div className="w-8 h-px bg-gray-300" />
-            <div className={`w-3 h-3 rounded-full ${status === 'analyzing' ? 'bg-blue-500 animate-pulse' : status === 'complete' ? 'bg-green-500' : 'bg-gray-300'}`} />
+            <div className={`w-3 h-3 rounded-full ${status === 'analyzing' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'}`} />
             <span>AI Analysis</span>
           </div>
         </div>
